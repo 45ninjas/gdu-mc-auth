@@ -1,3 +1,6 @@
+<?php
+include_once "functions.php";
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -5,11 +8,14 @@
 	<link rel="stylesheet" type="text/css" href="styles.css">
 </head>
 <body>
+	<div class="welcome">
 	<?php
 	include("private/welcome-message.html")
 	?>
+	</div>
+	
+	<p>To verify that you are following Phazor, Please click the button below.</p>
 	<a href="">Login with Mixer</a>
-
 	<div class="modal"></div>
 </body>
 </html>

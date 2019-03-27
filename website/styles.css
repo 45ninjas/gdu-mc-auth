@@ -10,10 +10,16 @@ body
   margin-bottom: 100px;
   margin-left: 30px;
   margin-right: 30px;
+
+  line-height: 1.5em;
+  font-size: 110%;
 }
 html
 {
-  background-image: url("private/Images/unknown.png");
+  background-image: url("images/unknown.png");
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 body {

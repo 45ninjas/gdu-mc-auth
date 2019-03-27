@@ -14,8 +14,8 @@ include_once "functions.php";
 	?>
 	</div>
 	
-	<p>To verify that you are following Phazor, Please click the button below.</p>
-	<a href="">Login with Mixer</a>
+	<p>To verify that you are following Phazor, Please sign in with your mixer account by clicking the button below.</p>
+	<a href="" class="button">Login with Mixer</a>
 	<div class="modal"></div>
 </body>
 </html>

@@ -1,0 +1,13 @@
+body
+{
+  background-color: white;
+  font-family: sans-serif;
+  max-width: 950px;
+  margin: auto;
+  padding: 1em;
+  border-radius: 8px;
+}
+html
+{
+  background-color: navy;
+}

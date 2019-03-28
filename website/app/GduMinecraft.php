@@ -1,27 +1,42 @@
 <?php
 
+include "vendor/autoload.php";
+include "mixer.php";
+
 class GduMinecraft
 {
 	public static $Title = "GDU Minecraft";
 	public static $Dbc;
 	public static $PageFile;
 	public static $Args = array();
+	public static $page;
 
 	public static function Init()
 	{
-		$page = $_SERVER["PATH_INFO"];
+		self::$page = $_SERVER["PATH_INFO"];
 
-		if($page == "/" || empty($page))
-			$page = "landing";
+		if(self::$page == "/" || empty(self::$page))
+			self::$page = "landing";
 
-		self::$Args['page'] = $page;
-		self::$PageFile = "app/pages/$page.php";
+		self::$Args['page'] = self::$page;
+		self::$PageFile = "app/pages/".self::$page.".php";
 
 		// If the page does not exist show the 404 page.
 		if(!is_file(self::$PageFile))
 		{
 			self::Error("File not found", 404, "The requested page was not not found.");
 			return;
+		}
+
+		self::Behavour();
+	}
+
+	public static function Behavour()
+	{
+		if(self::$page == "/login")
+		{
+			$mixer = new Mixer();
+			$mixer->GetToken();
 		}
 	}
 

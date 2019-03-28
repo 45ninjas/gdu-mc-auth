@@ -12,3 +12,5 @@
 <p>You must be following Phazor to be able to join this server. This decision has been made to keep player counts respectable whilst removing any delay to get white-listed on the server.</p>
 <p>Once we know you have followed Phazor, you will be able to join the Minecraft server.</p>
 <p>Cant wait to see you there :)</p>
+
+<a href="login" class="button">Verify Follow</a>

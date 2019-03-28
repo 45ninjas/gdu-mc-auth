@@ -1,16 +1,21 @@
 <?php
+
+// Get all the rules for a foreach loop.
 function GetRules()
 {
-	$rulesFile = fopen("private/rules.txt", "r");
+	// Open the file and make sure we successfully opened the file.
+	$rulesFile = fopen("app/rules.txt", "r");
 
 	if(!$rulesFile)
 		die("unable to read the rules.txt file.");
 
+	// Go over each line in the rule file.
 	while (($line = fgets($rulesFile)) !== false)
 	{
 		yield $line;
 	}
 
+	// We are done, close the rule file.
 	fclose($rulesFile);
 }
 

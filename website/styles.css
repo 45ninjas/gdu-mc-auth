@@ -15,7 +15,8 @@ body
 }
 html
 {
-  background-image: url("images/unknown.png");
+  /*background-image: url("images/unknown.png");*/
+  background-color: #36464b;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;

@@ -11,8 +11,8 @@ class Mixer
 	public function __construct()
 	{
 		$this->provider = new \League\OAuth2\Client\Provider\GenericProvider([
-			'clientId'					=> $_SERVER['mixer_client_id'],
-			'clientSecret'				=> $_SERVER['mixer_client_secret'],
+			'clientId'					=> MIXER_CLIENT_ID,
+			'clientSecret'				=> MIXER_CLIENT_SECRET,
 			'redirectUri'				=> "https://sign-up.mc-gdu.mooo.com/login",
 			'urlAuthorize'				=> "https://mixer.com/oauth/authorize",
 			'urlAccessToken'			=> "https://mixer.com/api/v1/oauth/token",
@@ -104,7 +104,7 @@ class Mixer
 		$mixerUsers = implode(';', GduMinecraft::$Args['mixer-users']);
 		$request = $this->provider->getAuthenticatedRequest(
 			'GET',
-			"$this->mixerAPI/users/$userId/follows?where=userId:in:$mixerUsers&fields=userId,token",
+			"$this->mixerAPI/users/$userId/follows?where=userId:in:$mixerUsers&fields=userId,token,user",
 			$this->accessToken
 		);
 
@@ -115,6 +115,8 @@ class Mixer
 		{
 			array_push($user->following, $followed['userId']);
 		}
+
+		return $response;
 	}
 }
 ?>

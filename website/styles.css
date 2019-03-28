@@ -50,3 +50,42 @@ h2
   background-color: #3c76cc;
   border-color: #4690e4;
 }
+
+.mixerUser {
+  display: flex;
+  background-color: #f6f6f6;
+  border: 2px solid #0004;
+  box-shadow: 3px 3px 4px #00000060;
+  
+  padding: 25px;
+  margin: 1em 0;
+  border-radius: 6px;
+  background-image: linear-gradient(to bottom right,#F9F9F9,#dee1e6);
+  align-items: stretch;
+}
+
+.mixerUser span
+{
+  flex: 1;
+  line-height: 100px;
+  padding-left: 1em;
+  font-size: 200%;
+  font-weight: 500;
+}
+
+.mixerUser .tick,
+.mixerUser img
+{
+  display: block;
+  flex-shrink: 0;
+  flex-grow: 0;
+  border-radius: 50%;
+  height: 100px;
+  width: 100px;
+  line-height: 50px;
+  text-align: center;
+  color: white;
+  font-weight: bolder;
+  display: block;
+  background-color: green;
+}

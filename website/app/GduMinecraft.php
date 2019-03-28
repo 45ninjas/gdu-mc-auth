@@ -1,5 +1,6 @@
 <?php
 
+include "config.php";
 include "vendor/autoload.php";
 include "mixer.php";
 include 'database/user.php';
@@ -7,13 +8,15 @@ include 'database/user.php';
 class GduMinecraft
 {
 	public static $Title = "GDU Minecraft";
-	public static $Dbc;
+	public static $Pdo;
 	public static $PageFile;
 	public static $Args = array();
 	public static $page;
+	public static $User;
 
 	public static function Init()
 	{
+		self::SetPDO();
 		self::$page = $_SERVER["PATH_INFO"];
 
 		session_start();
@@ -34,14 +37,24 @@ class GduMinecraft
 		self::Behavour();
 	}
 
+	private static function SetPDO()
+	{
+		$dbUser = DB_USER;
+		$dbName = DB_NAME;
+		$dbHost = DB_HOST;
+		$dbPassword = DB_PASS;
+
+		self::$Pdo = new PDO("mysql:dbname=$dbName;host=$dbHost", $dbUser, $dbPassword);
+	}
+
 	public static function Behavour()
 	{
 		if(self::$page == "/login")
 		{
 			$mixer = new Mixer();
 			$mixer->GetToken();
-			$user = $mixer->GetDetails();
-			$mixer->GetFollowers($user);
+			self::$User = $mixer->GetDetails();
+			self::$Args['following'] = $mixer->GetFollowers(self::$User);
 		}
 	}
 

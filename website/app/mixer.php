@@ -5,9 +5,12 @@ class Mixer
 	public $scopes = ["channel:follow:self"];
 	public $mixerAPI = "https://mixer.com/api/v1";
 
-	public function GetToken()
+	public $provider;
+	public $accessToken;
+
+	public function __construct()
 	{
-		$provider = new \League\OAuth2\Client\Provider\GenericProvider([
+		$this->provider = new \League\OAuth2\Client\Provider\GenericProvider([
 			'clientId'					=> $_SERVER['mixer_client_id'],
 			'clientSecret'				=> $_SERVER['mixer_client_secret'],
 			'redirectUri'				=> "https://sign-up.mc-gdu.mooo.com/login",
@@ -17,13 +20,37 @@ class Mixer
 			'scopes'					=> $this->scopes,
 			'scopeSeparator'			=> ', '
 		]);
+	}
 
+	public function GetToken()
+	{
+		if(!isset($_SESSION) || $_SESSION['access-token'] == null)
+		{
+			$this->GetNewToken();
+		}
+		else
+		{
+			$this->accessToken = $_SESSION['access-token'];
+
+			if($this->accessToken->hasExpired())
+			{
+				$this->accessToken = $this->provider->getAccessToken('refresh_token', [
+					'refresh_token' => $this->accessToken->getRefreshToken()
+				]);
+
+				$_SESSION['access-token'] = $this->accessToken;
+			}
+		}
+
+	}
+	function GetNewToken()
+	{
 		// We don't have an auth code, get one.
 		if(!isset($_GET['code']))
 		{
-			$authorizationUrl =$provider->getAuthorizationUrl();
+			$authorizationUrl =$this->provider->getAuthorizationUrl();
 
-			$_SESSION['oauth2state'] = $provider->getState();
+			$_SESSION['oauth2state'] = $this->provider->getState();
 
 			// Redirect the user to the Auth URL over at mixer.
 			header('location: ' . $authorizationUrl);
@@ -41,37 +68,53 @@ class Mixer
 		}
 		else
 		{
-			try {
-				$accessToken = $provider->getAccessToken('authorization_code', [
-					'code'	=> $_GET['code']
-				]);
-				echo "<pre>";
-				echo "\nAccess Token:		" . $accessToken->getToken();
-				echo "\nRefresh Token:		" . $accessToken->getRefreshToken();
-				echo "\nExpired in:			" . $accessToken->getExpires();
-				echo "\nAlready expired:	" . $accessToken->hasExpired();
-				echo "</pre>";
+			$this->accessToken = $this->provider->getAccessToken('authorization_code', [
+				'code'	=> $_GET['code']
+			]);
 
-				$resourceOwner = $provider->getResourceOwner($accessToken);
-
-				var_export($resourceOwner->toArray());
-
-				$request = $provider->getAuthenticatedRequest(
-					'GET',
-					"$this->mixerAPI/users/current",
-					$accessToken
-				);
-			}
-			catch (\League\OAuth2\Client\Provider\Exception\IdentityProviderException $e)
-			{
-				throw($e);
-			}
-		}
+			$_SESSION['access-token'] = $this->accessToken;
+		}		
 	}
 
-	public function IsFollowing($uderID)
+	public function GetDetails()
 	{
-		
+		$user = new User();
+
+		// Get the basic user details.
+		$request = $this->provider->getAuthenticatedRequest(
+			'GET',
+			"$this->mixerAPI/users/current",
+			$this->accessToken
+		);
+
+		$response = $this->provider->getParsedResponse($request);
+
+		if($response != null)
+		{
+			$user->mixerId = $response['id'];
+			$user->mixer = $response['username'];
+		}
+
+		return $user;
+	}
+
+	public function GetFollowers($user)
+	{
+		$userId = $user->mixerId;
+		$mixerUsers = implode(';', GduMinecraft::$Args['mixer-users']);
+		$request = $this->provider->getAuthenticatedRequest(
+			'GET',
+			"$this->mixerAPI/users/$userId/follows?where=userId:in:$mixerUsers&fields=userId,token",
+			$this->accessToken
+		);
+
+		$response = $this->provider->getParsedResponse($request);
+
+		$user->following = array();
+		foreach ($response as $followed)
+		{
+			array_push($user->following, $followed['userId']);
+		}
 	}
 }
 ?>

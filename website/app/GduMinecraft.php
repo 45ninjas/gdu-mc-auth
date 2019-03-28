@@ -2,6 +2,7 @@
 
 include "vendor/autoload.php";
 include "mixer.php";
+include 'database/user.php';
 
 class GduMinecraft
 {
@@ -14,6 +15,8 @@ class GduMinecraft
 	public static function Init()
 	{
 		self::$page = $_SERVER["PATH_INFO"];
+
+		session_start();
 
 		if(self::$page == "/" || empty(self::$page))
 			self::$page = "landing";
@@ -37,6 +40,8 @@ class GduMinecraft
 		{
 			$mixer = new Mixer();
 			$mixer->GetToken();
+			$user = $mixer->GetDetails();
+			$mixer->GetFollowers($user);
 		}
 	}
 

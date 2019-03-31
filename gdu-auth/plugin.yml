@@ -1,0 +1,5 @@
+name: GduAuthPlugin
+main: com.those45ninjas.gduAuth.GduAuth
+version: 1.0
+api-version: 1.13
+commands:

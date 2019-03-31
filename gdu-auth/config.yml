@@ -1,0 +1,13 @@
+mixer-client-id: ""
+mixer-client-secret: ""
+mixer-v1-api: "https://mixer.com/api/v1"
+
+link-message: |-
+  Hello ::user::, Welcome to the GDU Minecraft server.
+  To join this server you must be following PhazorGDU on Mixer.com.
+
+  You need to go to https://mixer.com/go and enter the following six digit code.
+
+  ::code::
+
+  Having issues? Let us know on discord. https://discord.gg/MeGm6ZS

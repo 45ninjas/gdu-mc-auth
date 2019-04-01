@@ -52,37 +52,34 @@
       <version>5.0.4-SNAPSHOT</version>
     </dependency>
   </dependencies>
-    <build>
-        <sourceDirectory>src/main/java</sourceDirectory>
-        <defaultGoal>clean install</defaultGoal>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <!-- Keeping filtering at true here reduces plugin.yml redundancy! -->
-                <filtering>true</filtering>
-                <includes>
-                    <include>plugin.yml</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <!-- Keep filtering at false for other resources to prevent bad magic -->
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                    <exclude>plugin.yml</exclude>
-                </excludes>
-            </resource>
-        </resources>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
-                <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
-                </configuration>
-            </plugin>
-        </plugins>
-</build>
+
+	<build>
+    <defaultGoal>package</defaultGoal>
+    <finalName>Gdu-Auth</finalName>
+    <sourceDirectory>src/main/java</sourceDirectory>
+  	
+    <resources>
+      <resource>
+        <targetPath>.</targetPath>
+        <filtering>false</filtering>
+        <directory>${basedir}/src/main/</directory>
+        <includes>
+          <include>plugin.yml</include>
+          <include>config.yml</include>
+        </includes>
+      </resource>
+    </resources>
+
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.1</version>
+        <configuration>
+          <source>1.7</source>
+          <target>1.7</target>
+        </configuration>
+      </plugin>
+    </plugins>
+
+	</build>
 </project>

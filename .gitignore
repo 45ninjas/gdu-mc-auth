@@ -1,3 +1,4 @@
 website/composer.lock
 website/vendor/
 website/app/config.php
+gdu-auth/target/

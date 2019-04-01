@@ -10,11 +10,11 @@ public class GduAuth extends JavaPlugin
 		getServer().getPluginManager().registerEvents(new GduListener(this), this);
 		mixer = new MixerFunctions(this);
 		
-		if(!mixer.ConfigValid())
+/*		if(!mixer.ConfigValid())
 		{
 			getLogger().severe("Mixer client_ID is incorrect");
 			getServer().getPluginManager().disablePlugin(this);
-		}
+		}*/
 	}
 	@Override
 	public void onDisable() {

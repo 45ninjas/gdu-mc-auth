@@ -63,6 +63,9 @@
         <targetPath>.</targetPath>
         <filtering>false</filtering>
         <directory>${basedir}/src/main/</directory>
+      </resource>
+      <resource>
+        <directory>${basedir}</directory>
         <includes>
           <include>plugin.yml</include>
           <include>config.yml</include>
@@ -78,6 +81,26 @@
           <source>1.7</source>
           <target>1.7</target>
         </configuration>
+      </plugin>
+        <plugin>
+        <artifactId>maven-shade-plugin</artifactId>
+        <!-- <version>3.2.1</version> -->
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <relocations>
+                <relocation>
+                  <pattern>com.mixer</pattern>
+                  <shadedPattern>com.mixer.api</shadedPattern>
+                </relocation>
+              </relocations>
+            </configuration>
+          </execution>
+        </executions>        
       </plugin>
     </plugins>
 

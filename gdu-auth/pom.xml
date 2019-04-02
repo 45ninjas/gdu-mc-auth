@@ -32,10 +32,10 @@
       <id>mixer-releases</id>
       <url>https://maven.mixer.com/content/repositories/releases/</url>
     </repository>
-    <repository>
+<!--     <repository>
       <id>mixer-snapshots</id>
       <url>https://maven.mixer.com/content/repositories/snapshots/</url>
-    </repository>
+    </repository> -->
   </repositories>
 
   <dependencies>

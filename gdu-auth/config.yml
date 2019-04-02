@@ -1,6 +1,11 @@
-mixer-client-id: ""
-mixer-client-secret: ""
-mixer-v1-api: "https://mixer.com/api/v1"
+mixer:
+  id: ""
+  secret: ""
+
+database:
+  jdbc: "jdbc:mysql://host:port/database"
+  user: username
+  password: password
 
 link-message: |-
   Hello ::user::, Welcome to the GDU Minecraft server.

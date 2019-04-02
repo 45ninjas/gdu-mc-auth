@@ -3,3 +3,4 @@ website/vendor/
 website/app/config.php
 gdu-auth/target/
 gdu-auth/make.sh
+gdu-auth/build-script/

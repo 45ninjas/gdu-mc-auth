@@ -88,4 +88,43 @@ public class User {
 
         statement.execute();
     }
+
+    public void Update(Connection connection) throws SQLException
+    {
+        String sql = "UPDATE users" +
+        "SET minecraftName = ?," +
+        "status = ?," +
+        "mixerId = ?," +
+        "mixerName = ?," +
+        "mixerOAuthCode = ?," +
+        "WHERE UUID = UUID_TO_BIN(?)";
+
+        PreparedStatement stm = connection.prepareStatement(sql);
+        stm.setString(1, minecraftName);
+        stm.setString(2, status.toString());
+        stm.setLong(3, mixerID);
+        stm.setString(4, mixerName);
+        stm.setString(5, mixerOAuthCode);
+        stm.setString(6, uuid.toString());
+
+        stm.executeUpdate();
+    }
+
+    public void ChangeStatus(Status status, Connection connection) throws SQLException
+    {
+        this.status = status;
+        String sql = "UPDATE users SET status = ? WHERE UUID = UUID_TO_BIN(?)";
+        PreparedStatement stm = connection.prepareStatement(sql);
+        stm.setString(1, status.toString());
+        stm.setString(2, uuid.toString());
+        
+        stm.executeUpdate();
+    }
+    public void UpdateLastLogin(Connection connection) throws SQLException
+    {
+        PreparedStatement stm = connection.prepareStatement("UPDATE users SET lastLogin = NOW() WHERE UUID = UUID_TO_BIN(?)");
+        stm.setString(1, uuid.toString());
+
+        stm.executeUpdate();
+    }
 }

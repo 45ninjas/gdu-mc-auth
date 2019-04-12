@@ -7,19 +7,35 @@ database:
   user: username
   password: password
 
-link-message: |-
-  Hello ::user::, Welcome to the GDU Minecraft server.
-  To join this server you must be following PhazorGDU on Mixer.com.
+messages:
+  start: |-
+    Welcome ::user::. To join this server you must be following PhazorGUD on mixer.com
+    Please enter your six digit code at https://mixer.com/go to join.
 
-  You need to go to https://mixer.com/go and enter the following six digit code.
+    ::code::
 
-  ::code::
+    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+  code-un-used: |-
+    Please enter your six digit code at https://mixer.com/go to join.
 
-  Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+    ::code::
 
-fault-message: |-
-  Unfortuantley there was an error while authorizing your account.
-  If this keeps happening tell us on discord https://discord.gg/MeGm6ZS
+    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+  code-expired: |-
+    Sorry your prevoius 6 digit code has expired.
+    Please enter your six digit code at https://mixer.com/go to join.   
 
-  Error Details
-  ::exception::
+    ::code::
+
+    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+  not-following: |-
+    You must be following PhazorGDU on mixer to join.
+
+    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS    
+  fault: |-
+    Unfortuantley there was an error while authorizing your account.
+
+    Error Details
+    ::exception::
+
+    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS

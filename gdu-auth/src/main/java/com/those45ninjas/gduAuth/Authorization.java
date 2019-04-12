@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.UUID;
 
 import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeResponse;
@@ -83,15 +85,24 @@ public class Authorization {
 
 			// Just make sure the user actually exists since we have created a new one.
 			if(user == null)
-			{
 				throw new Exception("SQL user was null after creating a new user");
-			}
 
+			// The user was issued a code, we are wating for the user to come back.
+			Shortcode code = Shortcode.GetCode(user.uuid, connection);
+			if(user.status == Status.MIXER_AUTH_WAITING)
+			{
+				if(code.expires.after(new Timestamp(System.currentTimeMillis())))
+				{
+					// Looks like we need a new mixer code.
+					plugin.mixer.CheckShortcode(code.handle);
+				}
+			}
 			// The player is new, let's give them a mixer code.
-			if(user.status == Status.AUTH_NEW)
+			else if(user.status == Status.AUTH_NEW)
 			{
 				MakeCode(user.uuid);
-			}
+				user.ChangeStatus(Status.MIXER_AUTH_WAITING, connection);
+			}			
 
 			return user.status;
 
@@ -101,12 +112,12 @@ public class Authorization {
 			throw e;
 		}
 	}
-	private void MakeCode(UUID uuid) throws SQLException
+	private Shortcode MakeCode(UUID uuid) throws SQLException
 	{
 		ShortcodeResponse response = plugin.mixer.GetNewShortcode();
 		plugin.getLogger().info("Mixer Shortcode for " + uuid + " is " + response.code);
 		plugin.getLogger().info(response.handle);
 
-		Shortcode.InsertShortcode(uuid, response, connection);
+		return Shortcode.InsertShortcode(uuid, response, connection);
 	}
 }

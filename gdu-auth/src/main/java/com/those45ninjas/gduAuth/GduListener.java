@@ -5,6 +5,9 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
+
+import java.util.regex.Matcher;
+
 import com.those45ninjas.gduAuth.Authorization;
 import com.those45ninjas.gduAuth.Authorization.Status;
 import com.those45ninjas.gduAuth.database.User;
@@ -48,25 +51,54 @@ public class GduListener implements Listener
 				return;
 			}
 
-			player.disallow(Result.KICK_OTHER, "There was an unknown error!");
+			throw new Exception("Something went terribly wrong.");
 		}
 		catch (Exception e)
 		{
-			String msg = plugin.getConfig().getString("fault-message", "there was an error. Details: ::exception::");
-			msg = msg.replaceAll("::exception::", e.getMessage());
-			player.disallow(Result.KICK_OTHER, msg);
+			player.disallow(Result.KICK_OTHER, CreateFaultMessage(e));
 			throw e;
 		}
 	}
-	
-	// Create's a message to help users link their minecraft UUID with mixer.
-	String CreateMessage(String username, String mixerCode)
+
+	String CreateStartMessage(String username, String mixerCode)
 	{
-		String message = plugin.getConfig().getString("link-message");
+		String msg = plugin.getConfig().getString("messages.start", "Welcome ::user::, Please enter this six digit code into https://mixer.com/go\n::code::");
 		
-		message = message.replaceAll("::user::", username);
-		message = message.replaceAll("::code::", mixerCode.replaceAll(".(?=.)", "$0 "));
+		msg = msg.replaceAll("::user::", Matcher.quoteReplacement(username));
+		msg = msg.replaceAll("::code::", mixerCode.replaceAll(".(?=.)", "$0 "));
 		
-		return message;
+		return msg;
+	}
+
+	String CreateExpiredMessage(String mixerCode)
+	{
+		String msg = plugin.getConfig().getString("messages.code-expired", "Your previous code has expired. Here's your new one.\n::code::");
+		msg = msg.replaceAll("::code::", mixerCode.replaceAll(".(?=.)", "$0 "));
+		
+		return msg;
+	}
+
+	String CreateUnusedMessage(String mixerCode)
+	{
+		String msg = plugin.getConfig().getString("messages.code-un-used", "please enter your six digit code into https://mixer.com/go\n::code::");
+		msg = msg.replaceAll("::code::", mixerCode.replaceAll(".(?=.)", "$0 "));
+		
+		return msg;
+	}
+
+	String CreateNotFollowingMessage(String mixerCode)
+	{
+		String msg = plugin.getConfig().getString("messages.not-following", "You are not following the mixer user.\n::code::");
+		msg = msg.replaceAll("::code::", mixerCode.replaceAll(".(?=.)", "$0 "));
+		
+		return msg;
+	}
+	
+	String CreateFaultMessage(Exception e)
+	{
+		String msg = plugin.getConfig().getString("messages.fault", "There was an error. Details: ::exception::");
+		msg = msg.replaceAll("::exception::", Matcher.quoteReplacement(e.getMessage()));
+
+		return msg;
 	}
 }

@@ -6,6 +6,7 @@ import com.mixer.api.MixerAPI;
 import com.mixer.api.http.*;
 import com.mixer.api.util.ResponseHandler;
 import com.those45ninjas.gduAuth.MixerAPIExtension.OAuthClient;
+import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeCheck;
 import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeResponse;
 import com.those45ninjas.gduAuth.MixerAPIExtension.UtilsMixerService;
 
@@ -81,23 +82,35 @@ public class MixerFunctions {
 
 	public ShortcodeResponse GetNewShortcode() {
 		ListenableFuture<ShortcodeResponse> future = mixer.use(UtilsMixerService.class).shortcode(clientId, clientSecret);
-		try
-		{
+		try {
 			ShortcodeResponse resp = future.get(10, TimeUnit.SECONDS);
 			return resp;
-		}
-		catch (InterruptedException e)
-		{
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TimeoutException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		catch (ExecutionException e)
-		{
+		return null;
+	}
+
+	public ShortcodeCheck CheckShortcode(String handle) {
+		ListenableFuture<ShortcodeCheck> future = mixer.use(UtilsMixerService.class).checkShortcode(handle, clientId,
+				clientSecret);
+		try {
+			ShortcodeCheck check = future.get(10, TimeUnit.SECONDS);
+			return check;
+		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		catch (TimeoutException e)
-		{
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TimeoutException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

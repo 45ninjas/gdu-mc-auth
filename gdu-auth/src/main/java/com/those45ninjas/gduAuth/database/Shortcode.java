@@ -28,7 +28,7 @@ public class Shortcode {
     // Get a shortcode.
     public static Shortcode GetCode(UUID uuid, Connection connection) throws SQLException
     {
-        PreparedStatement statement = connection.prepareStatement("SELECT BIN_TO_UUID(UUDI) as UUID, shortcode, handle, expires from shortcodes where UUID_TO_BIN(?)");
+        PreparedStatement statement = connection.prepareStatement("SELECT BIN_TO_UUID(UUID) as UUID, shortcode, handle, expires from shortcodes where UUID = UUID_TO_BIN(?)");
         statement.setString(1, uuid.toString());
 
         ResultSet resultSet = statement.executeQuery();

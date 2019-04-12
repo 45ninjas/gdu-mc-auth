@@ -30,4 +30,9 @@ public class UtilsMixerService extends AbstractHTTPService
         return this.post("shortcode", ShortcodeResponse.class, data);
 	}
 
+	public ListenableFuture<ShortcodeCheck> checkShortcode(String handle, String clientId, String clientSecret)
+	{
+		return this.get("shortcode/check/" + handle, ShortcodeCheck.class);
+	}
+
 }

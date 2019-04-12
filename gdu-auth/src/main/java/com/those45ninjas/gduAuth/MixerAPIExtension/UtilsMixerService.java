@@ -1,12 +1,8 @@
 package com.those45ninjas.gduAuth.MixerAPIExtension;
 
-import org.bukkit.Bukkit;
-
-import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.gson.JsonObject;
 import com.mixer.api.MixerAPI;
-import com.mixer.api.http.MixerHttpClient;
 import com.mixer.api.services.*;
 import com.those45ninjas.gduAuth.MixerFunctions;
 

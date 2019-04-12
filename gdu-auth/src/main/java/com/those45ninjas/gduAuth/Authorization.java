@@ -2,11 +2,20 @@ package com.those45ninjas.gduAuth;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeResponse;
+import com.those45ninjas.gduAuth.database.Shortcode;
+import com.those45ninjas.gduAuth.database.User;
+
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.event.player.PlayerEvent;
+import org.bukkit.entity.Player;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
+import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 
 public class Authorization {
 	
@@ -24,12 +33,22 @@ public class Authorization {
 		MIXER_AUTH_404,
 		
 		// The user is new, this is only set by the database.
-		AUTH_NEW
+		AUTH_NEW,
+
+		// Error state.
+		ERROR
 	}
 	
-	static Connection connection;
+	public Connection connection;
+	private GduAuth plugin;
+
+	public Authorization(GduAuth plugin) throws ClassNotFoundException, SQLException
+	{
+		this.plugin = plugin;
+		Connect(plugin.getConfig());
+	}
 	
-	public static void Connect(FileConfiguration config) throws SQLException, ClassNotFoundException
+	void Connect(FileConfiguration config) throws SQLException, ClassNotFoundException
 	{
 		// We won't create a new connection if one already exists.
 		if(connection != null && !connection.isClosed())
@@ -48,17 +67,46 @@ public class Authorization {
 		// Get the connection.
 		connection = DriverManager.getConnection(jdbc,user,password);
 	}
-	
-	public static void AddNewUser(PlayerEvent player) {
-		// INSERT (UUID,minecraftName) INTO users
-	}
-	public static void GetUser(UUID user) {
-		// SELECT * FROM users WHERE UUID=$user
-	}
-	
-	public static Status GetStatus(UUID uniqueId) {
-		// Get the status of the user.... maybe we should remove this one later.
-		return Status.ALLOWED;
-	}
 
+	public Status Check(AsyncPlayerPreLoginEvent player) throws Exception
+	{
+		try
+		{
+			User user = User.GetUser(player.getUniqueId(), connection);
+			if(user == null)
+			{
+				// Looks like the user is not in the database. Go through the process of
+				// adding them and generating a mixer key.
+				User.AddNewUser(player.getName(), player.getUniqueId(), connection);
+				user = User.GetUser(player.getUniqueId(), connection);
+			}
+
+			// Just make sure the user actually exists since we have created a new one.
+			if(user == null)
+			{
+				throw new Exception("SQL user was null after creating a new user");
+			}
+
+			// The player is new, let's give them a mixer code.
+			if(user.status == Status.AUTH_NEW)
+			{
+				MakeCode(user.uuid);
+			}
+
+			return user.status;
+
+		}
+		catch (Exception e) 
+		{
+			throw e;
+		}
+	}
+	private void MakeCode(UUID uuid) throws SQLException
+	{
+		ShortcodeResponse response = plugin.mixer.GetNewShortcode();
+		plugin.getLogger().info("Mixer Shortcode for " + uuid + " is " + response.code);
+		plugin.getLogger().info(response.handle);
+
+		Shortcode.InsertShortcode(uuid, response, connection);
+	}
 }

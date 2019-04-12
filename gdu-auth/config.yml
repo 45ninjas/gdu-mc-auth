@@ -16,3 +16,10 @@ link-message: |-
   ::code::
 
   Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+
+fault-message: |-
+  Unfortuantley there was an error while authorizing your account.
+  If this keeps happening tell us on discord https://discord.gg/MeGm6ZS
+
+  Error Details
+  ::exception::

@@ -1,7 +1,5 @@
 package com.those45ninjas.gduAuth;
 
-import java.util.UUID;
-
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -9,6 +7,7 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 import com.those45ninjas.gduAuth.Authorization;
 import com.those45ninjas.gduAuth.Authorization.Status;
+import com.those45ninjas.gduAuth.database.User;
 
 public class GduListener implements Listener
 {
@@ -25,35 +24,39 @@ public class GduListener implements Listener
 	}
 	
 	@EventHandler
-	public void onAsyncPlayerPrelogin(AsyncPlayerPreLoginEvent player)
+	public void onAsyncPlayerPrelogin(AsyncPlayerPreLoginEvent player) throws Exception
 	{
 		// A player is trying to join.
 		
 		// First, check to see if the server has a whitelist and if the player is the white-list.
-		if(Bukkit.hasWhitelist() && Bukkit.getWhitelistedPlayers().contains(player)) {
+		if(Bukkit.hasWhitelist() && Bukkit.getWhitelistedPlayers().contains(player))
+		{
 			// Let the player join.
 			player.allow();
 			return;
 		}
-		
-		// Not on the white-list? Let's check the database.
-		Status status = Authorization.GetStatus(player.getUniqueId());
-		
-		// Is the player allowed to join?
-		if(status == Status.ALLOWED)
+		try
 		{
-			player.allow();
-			return;
+			// Get the status of the player.
+			Status state = plugin.auth.Check(player);
+			plugin.getLogger().info("User state: " + state);
+
+			if(state == Status.ALLOWED)
+			{
+				// Wooh, the player is allowed in!
+				player.allow();
+				return;
+			}
+
+			player.disallow(Result.KICK_OTHER, "There was an unknown error!");
 		}
-		
-		// The player is not following enough users, kick'em.
-		if(status == Status.NOT_FOLLOWING)
+		catch (Exception e)
 		{
-			player.disallow(Result.KICK_OTHER, "You are not following PhazorGDU on mixer.com");
+			String msg = plugin.getConfig().getString("fault-message", "there was an error. Details: ::exception::");
+			msg = msg.replaceAll("::exception::", e.getMessage());
+			player.disallow(Result.KICK_OTHER, msg);
+			throw e;
 		}
-		
-		// The player has not been allowed in, let's give them a code.
-		player.disallow(Result.KICK_WHITELIST, CreateMessage(player.getName(), "E22A97"));
 	}
 	
 	// Create's a message to help users link their minecraft UUID with mixer.

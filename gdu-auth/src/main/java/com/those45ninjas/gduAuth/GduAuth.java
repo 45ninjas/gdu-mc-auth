@@ -1,12 +1,15 @@
 package com.those45ninjas.gduAuth;
-import java.sql.SQLException;
 
 import com.those45ninjas.gduAuth.Authorization;
+
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class GduAuth extends JavaPlugin
 {
-	MixerFunctions mixer;
+	public MixerFunctions mixer;
+	public Authorization auth;
+
 	@Override
 	public void onEnable() {
 		
@@ -19,17 +22,16 @@ public class GduAuth extends JavaPlugin
 		// Attempt to create a connection to the database.
 		try
 		{
-			Authorization.Connect(getConfig());
+			auth = new Authorization(this);			
+			mixer = new MixerFunctions(this);
 		}
-		catch (ClassNotFoundException | SQLException e)
+		catch (Exception e)
 		{
-			// TODO Auto-generated catch block
+			getLogger().severe("GduAuth failed to initalize. Disabling plugin.");
+			getLogger().severe(e.getMessage());
 			e.printStackTrace();
+			Bukkit.getPluginManager().disablePlugin(this);
 		}
-		
-		// Create the mixer functions instance.
-		// TODO: Change this to static?
-		mixer = new MixerFunctions(this);
 	}
 	@Override
 	public void onDisable() {

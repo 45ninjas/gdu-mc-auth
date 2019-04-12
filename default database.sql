@@ -2,7 +2,7 @@
 CREATE TABLE users (
 	UUID BINARY(16),
 	status varchar(32) default "AUTH_NEW",
-	mixerID int unsigned not null,
+	mixerID int unsigned null,
 	minecraftName varchar(255) null,
 	mixerName varchar(255) null,
 	mixerOAuthCode text null,
@@ -16,7 +16,7 @@ CREATE TABLE users (
 -- The tokens table, it stores data about active tokens.
 CREATE TABLE shortcodes (
 	UUID BINARY(16),
-	code varchar(6) not null,
+	shortcode varchar(6) not null,
 	handle text not null,
 	expires timestamp not null,
 	PRIMARY KEY(UUID),

@@ -3,4 +3,6 @@ website/vendor/
 website/app/config.php
 gdu-auth/target/
 gdu-auth/make.sh
-gdu-auth/build-script/
+gdu-auth/.classpath
+gdu-auth/.settings/
+gdu-auth/.vscode

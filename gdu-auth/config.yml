@@ -22,7 +22,7 @@ database:
 
 # Customize these messages to fit your server/community. Details on variables at end of file.
 messages:
-  join-message: ::user:: (mixer ::mixer-user::) Joined the server. They are following ::follows::
+  join-message: "::user:: (mixer ::mixer-user::) Joined the server. They are following ::follows::"
   # This message replaces the standard 'Those45Ninjas joined the game' message.
   # Varibles: ::user::, ::mixer-user::, and ::follows::
 

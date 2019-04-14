@@ -1,7 +1,7 @@
 -- The users table, it stores data about users.
 CREATE TABLE users (
 	UUID BINARY(16),
-	status varchar(32) default "AUTH_NEW",
+	status int default 0,
 	mixerID int unsigned null,
 	minecraftName varchar(255) null,
 	mixerName varchar(255) null,

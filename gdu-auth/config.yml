@@ -1,37 +1,68 @@
+# The mixer id and secret. You can get one here https://mixer.com/lab/oauth.
+# The secret is REQUIRED. MAKE SURE this config file is confidetntail.
 mixer:
   id: ""
   secret: ""
 
+# Players must be following one of the below mixer streamers to be able to join the server.
+follow-users:
+  - PhazorGDU
+  - ItzJumble
+  - Those45Ninjas
+
+# Kick the user if they un-follow and would not be allowed back in later.
+# WARNING: This feature is experimental.
+kick-unfollow: true
+
+# Database details.
 database:
   jdbc: "jdbc:mysql://host:port/database"
   user: username
   password: password
 
+# Customize these messages to fit your server/community. Details on variables at end of file.
 messages:
+  join-message: ::user:: (mixer ::mixer-user::) Joined the server. They are following ::follows::
+  # This message replaces the standard 'Those45Ninjas joined the game' message.
+  # Varibles: ::user::, ::mixer-user::, and ::follows::
+
   start: |-
-    Welcome ::user::. To join this server you must be following PhazorGUD on mixer.com
+    Welcome ::user::. To join this server you must be following ::follow-users:: on mixer.com
     Please enter your six digit code at https://mixer.com/go to join.
 
     ::code::
 
     Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+  # The message shown to the user when they are kicked for the first tme.
+  # Or when the don't accept the permisions they are granting the OAuth.
+  # Variables: ::code:: and ::user::
+  
   code-un-used: |-
     Please enter your six digit code at https://mixer.com/go to join.
 
     ::code::
 
     Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+  # The message shown when the user has not entered the six digit code.
+  # Variables: ::code:: and ::user::
+
   code-expired: |-
     Sorry your prevoius 6 digit code has expired.
-    Please enter your six digit code at https://mixer.com/go to join.   
+    Please enter your NEW six digit code at https://mixer.com/go to join.   
 
     ::code::
 
     Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+  # The message shown when the user's six digit code has expired.
+  # Variables: ::code:: and ::user::
+  
   not-following: |-
-    You must be following PhazorGDU on mixer to join.
+    You must be following ::follow-users:: on mixer to join.
 
-    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS    
+    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+  # The messge shown when the user is not following one of the streamers in the follow-users list.
+  # Variables: ::user::, ::follow-users::, and ::mixer-user::
+  
   fault: |-
     Unfortuantley there was an error while authorizing your account.
 
@@ -39,3 +70,36 @@ messages:
     ::exception::
 
     Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+  # The message shown to the user when there was an error.
+  # Variables avaliale: ::exception::
+
+
+
+# Message variables are patterns that are replaced with data. For example all
+# bits of text that match ::user:: is replaced with the username of the minecraft
+# player.
+
+# ::code::
+#   The six digit code from mixer's shortcode system. that the user has to enter
+#   into https://mixer.com/go
+#   Example: 5 K J T L 4
+
+# ::user::
+#   The minecraft username of the user trying to join.
+#   Example: Those45Ninjas
+
+# ::mixer-user::
+#   The username of the mixer account associated with the minecraft account.
+#   Example: 45Ninjas
+
+# ::follows::
+#   The usernames (defined above) that the user must be following to join OR
+#   the usernames that the user is following when they joinned the server.
+#   Examples:
+#     1 user long: PhazorGDU
+#     2 users logn: PhazorGDU or ItzJumble
+#     3 or more long: PazorGDU, ItzJumble or Those45Ninjas
+
+# ::exception::
+#   A simple message describing the exception/error thrown. The terminal will show
+#   more details.

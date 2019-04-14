@@ -24,6 +24,7 @@ public class GduAuth extends JavaPlugin
 		{
 			auth = new Authorization(this);			
 			mixer = new MixerFunctions(this);
+			new Messages(this);
 		}
 		catch (Exception e)
 		{

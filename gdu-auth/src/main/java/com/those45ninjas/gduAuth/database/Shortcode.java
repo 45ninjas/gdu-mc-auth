@@ -25,10 +25,13 @@ public class Shortcode {
     // The time when the code will expire.
     public Timestamp expires;
 
+    // The code used to autorize the auth token.
+    public String authCode;
+
     // Get a shortcode.
     public static Shortcode GetCode(UUID uuid, Connection connection) throws SQLException
     {
-        PreparedStatement statement = connection.prepareStatement("SELECT BIN_TO_UUID(UUID) as UUID, shortcode, handle, expires from shortcodes where UUID = UUID_TO_BIN(?)");
+        PreparedStatement statement = connection.prepareStatement("SELECT BIN_TO_UUID(UUID) as UUID, shortcode, handle, expires, code from shortcodes where UUID = UUID_TO_BIN(?)");
         statement.setString(1, uuid.toString());
 
         ResultSet resultSet = statement.executeQuery();
@@ -40,6 +43,7 @@ public class Shortcode {
         shortcode.uuid = UUID.fromString(resultSet.getString("UUID"));
         shortcode.code = resultSet.getString("shortcode");
         shortcode.handle = resultSet.getString("handle");
+        shortcode.authCode = resultSet.getString("code");
         return shortcode;
     }
     
@@ -59,15 +63,16 @@ public class Shortcode {
 
         
         String sql = "INSERT INTO shortcodes" +
-        "(UUID, shortcode, handle, expires)" +
+        "(UUID, shortcode, handle, expires, code)" +
         "VALUES" +
-        "(UUID_TO_BIN(?),?,?,?)";
+        "(UUID_TO_BIN(?),?,?,?,?)";
         
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, code.uuid.toString());
         ps.setString(2, code.code);
         ps.setString(3, code.handle);
         ps.setTimestamp(4, code.expires);
+        ps.setString(5, code.authCode);
 
         ps.execute();
 

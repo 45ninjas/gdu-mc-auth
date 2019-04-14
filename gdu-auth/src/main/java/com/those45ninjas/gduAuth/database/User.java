@@ -7,7 +7,11 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.UUID;
 
+import com.mixer.api.MixerAPI;
+import com.mixer.api.http.MixerHttpClient;
+import com.those45ninjas.gduAuth.MixerFunctions;
 import com.those45ninjas.gduAuth.Authorization.Status;
+import com.those45ninjas.gduAuth.MixerAPIExtension.UtilsMixerService;
 
 public class User {
 
@@ -25,14 +29,13 @@ public class User {
     public long mixerID;
     public String mixerName;
 
-    // The mixer OAuth Code, (so we can check to see if they are following the correct users)
-    public String mixerOAuthCode;
-
     // The last time a successfull connection was made.
     public Timestamp lastLogin;
 
     // The time this user was added to the database.
     public Timestamp created;
+
+    public MixerAPI client;
 
     // Create a new user with a username and UUID
     public User(String mcName, UUID uuid)
@@ -48,11 +51,17 @@ public class User {
         // status = Status.ERROR;
     }
 
+    public void InitClient(Token token, MixerFunctions mixer)
+    {
+        client = new MixerAPI(mixer.clientId, token.accessToken);
+        client.register(new UtilsMixerService(client));
+    }
+
     // Gets a user from the database, of none exist with the specified UUID, null is returned.
     public static User GetUser(UUID uuid, Connection connection) throws SQLException
     {
         // Get the user from the database (converting the binarry UUID)
-        PreparedStatement statement = connection.prepareStatement("SELECT BIN_TO_UUID(UUID) as UUID, status, mixerID, minecraftName, mixerName, mixerOAuthCode, lastLogin, created FROM users where UUID = UUID_TO_BIN(?)");
+        PreparedStatement statement = connection.prepareStatement("SELECT BIN_TO_UUID(UUID) as UUID, status, mixerID, minecraftName, mixerName, lastLogin, created FROM users where UUID = UUID_TO_BIN(?)");
         statement.setString(1, uuid.toString());
         
         ResultSet resultSet = statement.executeQuery();
@@ -64,11 +73,10 @@ public class User {
         // We have a match. Add the details to a new user object.
         User user = new User();
         user.uuid = UUID.fromString(resultSet.getString("UUID"));
-        user.status = Status.valueOf(resultSet.getString("status"));
+        user.status = Status.SetVal(resultSet.getInt("status"));
         user.mixerID = resultSet.getInt("mixerID");
         user.minecraftName = resultSet.getString("minecraftName");
         user.mixerName = resultSet.getString("mixerName");
-        user.mixerOAuthCode = resultSet.getString("mixerOAuthCode");
         user.lastLogin = resultSet.getTimestamp("lastLogin");
         user.created = resultSet.getTimestamp("created");
 
@@ -83,7 +91,7 @@ public class User {
         "(UUID_TO_BIN(?),?,?)";
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.setString(1, uniqueID.toString());
-        statement.setString(2, Status.AUTH_NEW.toString());
+        statement.setInt(2, Status.ERROR.GetVal());
         statement.setString(3, username);
 
         statement.execute();
@@ -91,20 +99,18 @@ public class User {
 
     public void Update(Connection connection) throws SQLException
     {
-        String sql = "UPDATE users" +
-        "SET minecraftName = ?," +
-        "status = ?," +
-        "mixerId = ?," +
-        "mixerName = ?," +
-        "mixerOAuthCode = ?," +
+        String sql = "UPDATE users " +
+        "SET minecraftName = ?, " +
+        "status = ?, " +
+        "mixerId = ?, " +
+        "mixerName = ?, " +
         "WHERE UUID = UUID_TO_BIN(?)";
 
         PreparedStatement stm = connection.prepareStatement(sql);
         stm.setString(1, minecraftName);
-        stm.setString(2, status.toString());
+        stm.setInt(2, status.GetVal());
         stm.setLong(3, mixerID);
         stm.setString(4, mixerName);
-        stm.setString(5, mixerOAuthCode);
         stm.setString(6, uuid.toString());
 
         stm.executeUpdate();
@@ -115,7 +121,7 @@ public class User {
         this.status = status;
         String sql = "UPDATE users SET status = ? WHERE UUID = UUID_TO_BIN(?)";
         PreparedStatement stm = connection.prepareStatement(sql);
-        stm.setString(1, status.toString());
+        stm.setInt(1, status.GetVal());
         stm.setString(2, uuid.toString());
         
         stm.executeUpdate();

@@ -23,7 +23,7 @@ public class GduListener implements Listener
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event)
 	{
-		Bukkit.broadcastMessage("Hello World!");
+		Bukkit.broadcastMessage("Hello World2");
 	}
 	
 	@EventHandler
@@ -51,54 +51,18 @@ public class GduListener implements Listener
 				return;
 			}
 
+			if(state == Status.MIXER_CODE_204)
+			{
+				return;
+			}
+
+
 			throw new Exception("Something went terribly wrong.");
 		}
 		catch (Exception e)
 		{
-			player.disallow(Result.KICK_OTHER, CreateFaultMessage(e));
+			player.disallow(Result.KICK_OTHER, Messages.FaultMessage(e));
 			throw e;
 		}
-	}
-
-	String CreateStartMessage(String username, String mixerCode)
-	{
-		String msg = plugin.getConfig().getString("messages.start", "Welcome ::user::, Please enter this six digit code into https://mixer.com/go\n::code::");
-		
-		msg = msg.replaceAll("::user::", Matcher.quoteReplacement(username));
-		msg = msg.replaceAll("::code::", mixerCode.replaceAll(".(?=.)", "$0 "));
-		
-		return msg;
-	}
-
-	String CreateExpiredMessage(String mixerCode)
-	{
-		String msg = plugin.getConfig().getString("messages.code-expired", "Your previous code has expired. Here's your new one.\n::code::");
-		msg = msg.replaceAll("::code::", mixerCode.replaceAll(".(?=.)", "$0 "));
-		
-		return msg;
-	}
-
-	String CreateUnusedMessage(String mixerCode)
-	{
-		String msg = plugin.getConfig().getString("messages.code-un-used", "please enter your six digit code into https://mixer.com/go\n::code::");
-		msg = msg.replaceAll("::code::", mixerCode.replaceAll(".(?=.)", "$0 "));
-		
-		return msg;
-	}
-
-	String CreateNotFollowingMessage(String mixerCode)
-	{
-		String msg = plugin.getConfig().getString("messages.not-following", "You are not following the mixer user.\n::code::");
-		msg = msg.replaceAll("::code::", mixerCode.replaceAll(".(?=.)", "$0 "));
-		
-		return msg;
-	}
-	
-	String CreateFaultMessage(Exception e)
-	{
-		String msg = plugin.getConfig().getString("messages.fault", "There was an error. Details: ::exception::");
-		msg = msg.replaceAll("::exception::", Matcher.quoteReplacement(e.getMessage()));
-
-		return msg;
 	}
 }

@@ -2,43 +2,63 @@ package com.those45ninjas.gduAuth;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
+import com.mixer.api.http.MixerHttpClient;
+import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeCheck;
 import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeResponse;
 import com.those45ninjas.gduAuth.database.Shortcode;
+import com.those45ninjas.gduAuth.database.Token;
 import com.those45ninjas.gduAuth.database.User;
 
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 
-public class Authorization {
+public class Authorization
+{
 	
-	public enum Status {
-		ALLOWED,
+	public enum Status
+	{		
+		// Error state.*it all will work when
+		ERROR(0),
+		// The player is allowed to join.
+		ALLOWED(1),
 		// The player is not following any or all of the channels.
-		NOT_FOLLOWING,
-		// Wating for the player to enter the code, send them the old code.
-		MIXER_AUTH_WAITING,
+		NOT_FOLLOWING(2),
 		// Code is valid, the user has not granted it.
-		MIXER_AUTH_204,
+		MIXER_CODE_204(4),
 		// User denied access to account. They can't join, have a new code just in-case.
-		MIXER_AUTH_403,
+		MIXER_CODE_403(8),
 		// Auth code has expired, They need a new code.
-		MIXER_AUTH_404,
-		
-		// The user is new, this is only set by the database.
-		AUTH_NEW,
+		MIXER_CODE_404(16);
 
-		// Error state.
-		ERROR
+		private int id;
+		private static Map map = new HashMap<>();
+
+		Status(int val) {
+			id = val;
+		}
+
+		static {
+			for (Status status : Status.values()) {
+				map.put(status.id, status);
+			}
+		}
+
+		public int GetVal()
+		{
+			return id;
+		}
+		public static Status SetVal(int val)
+		{
+			return (Status) map.get(val);
+		}
 	}
 	
 	public Connection connection;
@@ -69,55 +89,120 @@ public class Authorization {
 		// Get the connection.
 		connection = DriverManager.getConnection(jdbc,user,password);
 	}
-
 	public Status Check(AsyncPlayerPreLoginEvent player) throws Exception
 	{
 		try
 		{
+			// See if the user is in the databae. If not, add them.
 			User user = User.GetUser(player.getUniqueId(), connection);
 			if(user == null)
-			{
-				// Looks like the user is not in the database. Go through the process of
-				// adding them and generating a mixer key.
+			{				
 				User.AddNewUser(player.getName(), player.getUniqueId(), connection);
 				user = User.GetUser(player.getUniqueId(), connection);
 			}
 
-			// Just make sure the user actually exists since we have created a new one.
-			if(user == null)
-				throw new Exception("SQL user was null after creating a new user");
-
-			// The user was issued a code, we are wating for the user to come back.
-			Shortcode code = Shortcode.GetCode(user.uuid, connection);
-			if(user.status == Status.MIXER_AUTH_WAITING)
+			// Does the user not have an OAuth Token?
+			Token token = Token.GetToken(player.getUniqueId(), connection);
+			if(token == null)
 			{
-				if(code.expires.after(new Timestamp(System.currentTimeMillis())))
+				// Create or check the shortcode.
+				ShortcodeStatus check = DoShortcode(user);
+				
+				// Tell the user to enter a code into mixer.
+				if(check.status == Status.MIXER_CODE_204 || check.status == Status.MIXER_CODE_403 || check.status == Status.MIXER_CODE_404)
 				{
-					// Looks like we need a new mixer code.
-					plugin.mixer.CheckShortcode(code.handle);
+					user.ChangeStatus(check.status, connection);
+					player.disallow(Result.KICK_OTHER, Messages.Shortcode(check.status, user, check.shortcode.code));
+					return check.status;
+				}
+
+				// Authorize and isnert the new token.
+				token = plugin.mixer.AuthorizeToken(check.shortcode.code);
+				token.InsertUpdateShortcode(connection);
+
+				// Remove the now un-used shortcode.
+				Shortcode.ClearShortcodesFor(player.getUniqueId(), connection);
+
+				user.InitClient(token, plugin.mixer);
+
+				// Get the user's mixer details.
+				plugin.mixer.SetUserDetails(user);
+			}
+			// The player already has a token, refresh it if needed.
+			else
+			{
+				user.InitClient(token, plugin.mixer);
+				// If the token is out of-date, get a new one.
+				Calendar now = Calendar.getInstance();
+				if(token.expires.before(now.getTime()))
+				{
+					// Refresh the token and add it to the database.
+					token = plugin.mixer.RefreshToken(token);
+					token.InsertUpdateShortcode(connection);
 				}
 			}
-			// The player is new, let's give them a mixer code.
-			else if(user.status == Status.AUTH_NEW)
-			{
-				MakeCode(user.uuid);
-				user.ChangeStatus(Status.MIXER_AUTH_WAITING, connection);
-			}			
 
-			return user.status;
-
+			return Status.ERROR;
 		}
 		catch (Exception e) 
 		{
 			throw e;
 		}
 	}
-	private Shortcode MakeCode(UUID uuid) throws SQLException
+	
+	private ShortcodeStatus DoShortcode(User user) throws Exception
 	{
-		ShortcodeResponse response = plugin.mixer.GetNewShortcode();
-		plugin.getLogger().info("Mixer Shortcode for " + uuid + " is " + response.code);
-		plugin.getLogger().info(response.handle);
+		ShortcodeStatus ss = new ShortcodeStatus();
+		ss.shortcode = Shortcode.GetCode(user.uuid, connection);
 
+		// Does the user have a shortcode assoicated with them?
+		if(ss.shortcode == null)
+		{
+			// Ask mixer for a shortcode.users
+			ShortcodeResponse shRsp = plugin.mixer.GetNewShortcode();
+
+			// Add the shortcode to the database.
+			ss.shortcode = Shortcode.InsertShortcode(user.uuid, shRsp, connection);
+
+			ss.status = Status.MIXER_CODE_204;
+			// return we are wating for the user to enter the shortcode.
+			return ss;
+		}
+
+		// What's the status of this shortcode?
+		ShortcodeCheck check = plugin.mixer.CheckShortcode(ss.shortcode.handle);
+
+		if(check.httpCode == 200)
+		{
+			ss.shortcode.authCode = check.code;
+			ss.status = Status.NOT_FOLLOWING;
+			return ss;
+		}
+
+		ss.status = Status.ERROR;
+
+		plugin.getLogger().info(ss.status.toString());
+
+		if(check.httpCode == 204)
+			ss.status = Status.MIXER_CODE_204;
+
+		if(check.httpCode == 403)
+			ss.status = Status.MIXER_CODE_403;
+
+		if(check.httpCode == 404)
+			ss.status = Status.MIXER_CODE_404;
+		return ss;
+	}
+
+	private class ShortcodeStatus
+	{
+		public Shortcode shortcode;
+		public Status status;
+	}
+
+	private Shortcode MakeCode(UUID uuid) throws Exception
+	{
+		ShortcodeResponse response = plugin.mixer.GetNewShortcode();		
 		return Shortcode.InsertShortcode(uuid, response, connection);
 	}
 }

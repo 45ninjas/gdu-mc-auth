@@ -5,10 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.UUID;
 
-import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeResponse;
+import org.bukkit.Bukkit;
 
 public class Token {
 
@@ -28,10 +27,15 @@ public class Token {
     // The token we use to refresh this token.
     public String refreshToken;
 
+    public Token(UUID uuid)
+    {
+        this.uuid = uuid;
+    }
+
     // Get a token for a user.
     public static Token GetToken(UUID uuid, Connection connection) throws SQLException
     {
-        PreparedStatement statement = connection.prepareStatement("SELECT BIN_TO_UUID(UUID) as UUID, access_token, type, expires, refresh_token from tokens where UUID = UUID_TO_BIN(?)");
+        PreparedStatement statement = connection.prepareStatement("SELECT access_token, type, expires, refresh_token from tokens where UUID = UUID_TO_BIN(?)");
         statement.setString(1, uuid.toString());
 
         ResultSet resultSet = statement.executeQuery();
@@ -39,8 +43,7 @@ public class Token {
         if(!resultSet.next())
             return null;
         
-        Token token = new Token();
-        token.uuid = UUID.fromString(resultSet.getString("UUID"));
+        Token token = new Token(uuid);
         token.accessToken = resultSet.getString("access_token");
         token.refreshToken = resultSet.getString("refresh_token");
         token.type = resultSet.getString("type");
@@ -49,20 +52,38 @@ public class Token {
         return token;
     }
 
-    // Insert a new token for a user.
-    public void InsertUpdateShortcode(Connection connection) throws SQLException
-    {     
-        String sql = "INSERT ON DUPLICATE KEY UPDATE shortcodes" +
-        "(UUID, access_token, type, expires, refresh_token)" +
-        "VALUES" +
+    public void InsertToken(Connection connection) throws SQLException
+    {
+        String sql = "INSERT INTO tokens " +
+        "(UUID, access_token, type, expires, refresh_token) " +
+        "VALUES " +
         "(UUID_TO_BIN(?),?,?,?,?)";
-        
+
         PreparedStatement ps = connection.prepareStatement(sql);
         ps.setString(1, uuid.toString());
         ps.setString(2, accessToken);
         ps.setString(3, type);
         ps.setTimestamp(4, expires);
         ps.setString(5, refreshToken);
+
+        ps.execute();
+    }
+
+    public void UpdateToken(Connection connection) throws SQLException
+    {     
+        String sql = "UPDATE tokens SET " +
+        "access_token = ?, " +
+        "type = ?, " +
+        "expires = ?, " +
+        "refresh_token = ? " +
+        "WHERE UUID = UUID_TO_BIN(?)";
+        
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, accessToken);
+        ps.setString(2, type);
+        ps.setTimestamp(3, expires);
+        ps.setString(4, refreshToken);
+        ps.setString(5, uuid.toString());
 
         ps.execute();
     }

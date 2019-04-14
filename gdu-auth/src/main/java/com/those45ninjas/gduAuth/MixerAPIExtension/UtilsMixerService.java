@@ -42,7 +42,7 @@ public class UtilsMixerService extends AbstractHTTPService
 		data.addProperty("client_id", clientId);
 		data.addProperty("client_secret", clientSecret);
 		data.addProperty("code", code);
-		return this.post("authrorize", OAuthTokenResponse.class, data);
+		return this.post("token", OAuthTokenResponse.class, data);
 	}
 	public ListenableFuture<OAuthTokenResponse> refreshToken(String refreshToken, String clientId, String clientSecret)
 	{
@@ -51,7 +51,7 @@ public class UtilsMixerService extends AbstractHTTPService
 		data.addProperty("refresh_token", refreshToken);
 		data.addProperty("client_id", clientId);
 		data.addProperty("client_secret", clientSecret);
-		return this.post("authrorize", OAuthTokenResponse.class, data);
+		return this.post("token", OAuthTokenResponse.class, data);
 	}
 
 }

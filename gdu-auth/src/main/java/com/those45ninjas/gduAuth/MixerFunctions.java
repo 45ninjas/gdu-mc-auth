@@ -99,6 +99,7 @@ public class MixerFunctions {
                 throw new Exception("The server was unable to get your user details from mixer.");
 
             plugin.getLogger().info("Set User Details response: " + badHttp.response.status());
+            plugin.getLogger().info(badHttp.response.body());
         }
     }
 
@@ -141,16 +142,16 @@ public class MixerFunctions {
 
 
     // Authorize a token.
-    public Token AuthorizeToken(String code) throws Exception
+    public Token AuthorizeToken(Token token, String code) throws Exception
     {
         ListenableFuture<OAuthTokenResponse> future = mixer.use(UtilsMixerService.class).authToken(code, clientId,
                 clientSecret);
-        return GetToken(future, new Token());
+        return GetToken(future, token);
     }
     // Refresh a token.
     public Token RefreshToken(Token token) throws Exception
     {
-        ListenableFuture<OAuthTokenResponse> future = mixer.use(UtilsMixerService.class).authToken(token.refreshToken, clientId,
+        ListenableFuture<OAuthTokenResponse> future = mixer.use(UtilsMixerService.class).refreshToken(token.refreshToken, clientId,
                 clientSecret);
         return GetToken(future, token);
     }
@@ -160,6 +161,7 @@ public class MixerFunctions {
         try
         {
             OAuthTokenResponse response = future.get(10, TimeUnit.SECONDS);
+            
             token.accessToken = response.access_token;
             token.refreshToken = response.refresh_token;
             token.type = response.token_type;
@@ -172,7 +174,13 @@ public class MixerFunctions {
         }
         catch (InterruptedException | ExecutionException | TimeoutException e)
         {
-            throw new Exception("The server was unable to authorize or refresh your token from mixer.com");
+            HttpBadResponseException badHttp = (HttpBadResponseException) e.getCause();
+
+            //throw new Exception("The server was unable to authorize or refresh your token from mixer.com");
+
+            plugin.getLogger().info("GetToken: " + badHttp.response.status());
+            plugin.getLogger().info(badHttp.response.body());
+            throw e;
         }
 
         return token;

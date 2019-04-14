@@ -117,8 +117,9 @@ public class Authorization
 				}
 
 				// Authorize and isnert the new token.
-				token = plugin.mixer.AuthorizeToken(check.shortcode.code);
-				token.InsertUpdateShortcode(connection);
+				token = new Token(player.getUniqueId());
+				token = plugin.mixer.AuthorizeToken(token, check.shortcode.authCode);
+				token.InsertToken(connection);
 
 				// Remove the now un-used shortcode.
 				Shortcode.ClearShortcodesFor(player.getUniqueId(), connection);
@@ -131,6 +132,9 @@ public class Authorization
 			// The player already has a token, refresh it if needed.
 			else
 			{
+				//TODO: Remove this debug line.
+				plugin.getLogger().info(token.uuid.toString());
+
 				user.InitClient(token, plugin.mixer);
 				// If the token is out of-date, get a new one.
 				Calendar now = Calendar.getInstance();
@@ -138,7 +142,7 @@ public class Authorization
 				{
 					// Refresh the token and add it to the database.
 					token = plugin.mixer.RefreshToken(token);
-					token.InsertUpdateShortcode(connection);
+					token.UpdateToken(connection);
 				}
 			}
 

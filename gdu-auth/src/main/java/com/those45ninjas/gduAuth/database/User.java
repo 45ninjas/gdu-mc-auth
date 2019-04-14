@@ -85,9 +85,9 @@ public class User {
     }
     public static void AddNewUser(String username, UUID uniqueID, Connection connection) throws SQLException
     {
-        String sql = "INSERT INTO users" +
-        "(UUID, status, minecraftName)" +
-        "VALUES" +
+        String sql = "INSERT INTO users " +
+        "(UUID, status, minecraftName) " +
+        "VALUES " +
         "(UUID_TO_BIN(?),?,?)";
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.setString(1, uniqueID.toString());

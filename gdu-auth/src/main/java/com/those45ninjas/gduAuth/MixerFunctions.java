@@ -86,20 +86,17 @@ public class MixerFunctions {
         });
     }
 
-    public void SetUserDetails(User user) throws Exception {
-        ListenableFuture<MixerUser> future = user.client.use(UsersService.class).getCurrent();
-        try {
+    public void SetUserDetails(AuthSession session) throws Exception {
+        ListenableFuture<MixerUser> future = session.client.use(UsersService.class).getCurrent();
+        try
+        {
             MixerUser mixUser = future.get(10, TimeUnit.SECONDS);
-            user.mixerName = mixUser.username;
-            user.mixerID = mixUser.id;
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            HttpBadResponseException badHttp = (HttpBadResponseException) e.getCause();
-
-            if (badHttp == null)
-                throw new Exception("The server was unable to get your user details from mixer.");
-
-            plugin.getLogger().info("Set User Details response: " + badHttp.response.status());
-            plugin.getLogger().info(badHttp.response.body());
+            session.user.mixerName = mixUser.username;
+            session.user.mixerID = mixUser.id;
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e)
+        {
+            Logging.LogFutureFail(e, "The server was unable to get your user details from mixer.com");
         }
     }
 
@@ -110,12 +107,7 @@ public class MixerFunctions {
             ShortcodeResponse resp = future.get(10, TimeUnit.SECONDS);
             return resp;
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            HttpBadResponseException badHttp = (HttpBadResponseException) e.getCause();
-
-            if (badHttp == null)
-                throw new Exception("The server was unable to contact mixer's servers.");
-
-            plugin.getLogger().info("Get New Shortcode Response: " + badHttp.response.status());
+            Logging.LogFutureFail(e, "The server was unable to get a six digit cdoe from mixer.com");
         }
         return null;
     }
@@ -131,11 +123,9 @@ public class MixerFunctions {
             return check;
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             HttpBadResponseException badHttp = (HttpBadResponseException) e.getCause();
-
-            if (badHttp == null)
-                throw new Exception("The server was unable to contact mixer's servers.");
-
             check.httpCode = badHttp.response.status();
+
+            Logging.LogFutureFail(e, "The server was unable to check your code with mixer.com");
         }
         return check;
     }
@@ -174,13 +164,7 @@ public class MixerFunctions {
         }
         catch (InterruptedException | ExecutionException | TimeoutException e)
         {
-            HttpBadResponseException badHttp = (HttpBadResponseException) e.getCause();
-
-            //throw new Exception("The server was unable to authorize or refresh your token from mixer.com");
-
-            plugin.getLogger().info("GetToken: " + badHttp.response.status());
-            plugin.getLogger().info(badHttp.response.body());
-            throw e;
+            Logging.LogFutureFail(e, "The server was unable to authenticate with mixer.com");
         }
 
         return token;

@@ -6,12 +6,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.*;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 
-import java.util.regex.Matcher;
-
-import com.those45ninjas.gduAuth.Authorization;
-import com.those45ninjas.gduAuth.Authorization.Status;
-import com.those45ninjas.gduAuth.database.User;
-
 public class GduListener implements Listener
 {
 	GduAuth plugin;
@@ -38,31 +32,14 @@ public class GduListener implements Listener
 			player.allow();
 			return;
 		}
-		try
-		{
-			// Get the status of the player.
-			Status state = plugin.auth.Check(player);
-			plugin.getLogger().info("User state: " + state);
+		
+		// Check the in-coming player.
+		AuthSession auth = plugin.auth.Check(player);
 
-			if(state == Status.ALLOWED)
-			{
-				// Wooh, the player is allowed in!
-				player.allow();
-				return;
-			}
-
-			if(state == Status.MIXER_CODE_204)
-			{
-				return;
-			}
-
-
-			throw new Exception("Something went terribly wrong.");
-		}
-		catch (Exception e)
-		{
-			player.disallow(Result.KICK_OTHER, Messages.FaultMessage(e));
-			throw e;
-		}
+		// Are they allowed?
+		if(auth.success)
+			player.allow();
+		else
+			player.disallow(Result.KICK_WHITELIST, auth.kickMessage);
 	}
 }

@@ -27,15 +27,17 @@ messages:
   # Varibles: ::user::, ::mixer-user::, and ::follows::
 
   start: |-
-    Welcome ::user::. To join this server you must be following ::follow-users:: on mixer.com
+    Welcome ::user::. To join this server you must be following ::follows:: on mixer.com
     Please enter your six digit code at https://mixer.com/go to join.
 
     ::code::
 
+    Re-join once you have finished.
+
     Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
   # The message shown to the user when they are kicked for the first tme.
   # Or when the don't accept the permisions they are granting the OAuth.
-  # Variables: ::code:: and ::user::
+  # Variables: ::code::, ::user::, ::expires:: and ::follows::
   
   code-un-used: |-
     Please enter your six digit code at https://mixer.com/go to join.
@@ -44,7 +46,7 @@ messages:
 
     Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
   # The message shown when the user has not entered the six digit code.
-  # Variables: ::code:: and ::user::
+  # Variables: ::code::, ::user::, ::expires:: and ::follows::
 
   code-expired: |-
     Sorry your prevoius 6 digit code has expired.
@@ -54,14 +56,23 @@ messages:
 
     Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
   # The message shown when the user's six digit code has expired.
-  # Variables: ::code:: and ::user::
+  # Variables: ::code::, ::user::, ::expires:: and ::follows::
+
+  code-forbidden: |-
+    You have denied our server access to see who you are folloing on mixer.
+    
+    Re-join to try again.
+
+    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+  # The message shown when the user's six digit code has expired.
+  # Variables: ::code::, ::user::, ::expires:: and ::follows::
   
   not-following: |-
-    You must be following ::follow-users:: on mixer to join.
+    You must be following ::follows:: on mixer to join.
 
     Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
   # The messge shown when the user is not following one of the streamers in the follow-users list.
-  # Variables: ::user::, ::follow-users::, and ::mixer-user::
+  # Variables: ::user::, ::mixer-user:: and ::follows::
   
   fault: |-
     Unfortuantley there was an error while authorizing your account.
@@ -99,6 +110,13 @@ messages:
 #     1 user long: PhazorGDU
 #     2 users logn: PhazorGDU or ItzJumble
 #     3 or more long: PazorGDU, ItzJumble or Those45Ninjas
+
+# ::expires::
+#   How many seconds until the shortcode expires.
+#   Examples:
+#     18 seconds
+#     2 minutes
+#     1 minute and 22 seconds
 
 # ::exception::
 #   A simple message describing the exception/error thrown. The terminal will show

@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+import com.mixer.api.MixerAPI;
 import com.mixer.api.http.MixerHttpClient;
 import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeCheck;
 import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeResponse;
@@ -89,115 +90,154 @@ public class Authorization
 		// Get the connection.
 		connection = DriverManager.getConnection(jdbc,user,password);
 	}
-	public Status Check(AsyncPlayerPreLoginEvent player) throws Exception
+	public AuthSession Check(AsyncPlayerPreLoginEvent player) throws Exception
 	{
+		AuthSession as = new AuthSession(player);
+		Logging.LogUserState(player.getName(), "Checking");
+		as.client = plugin.mixer.mixer;
 		try
 		{
-			// See if the user is in the databae. If not, add them.
-			User user = User.GetUser(player.getUniqueId(), connection);
-			if(user == null)
-			{				
-				User.AddNewUser(player.getName(), player.getUniqueId(), connection);
-				user = User.GetUser(player.getUniqueId(), connection);
-			}
-
-			// Does the user not have an OAuth Token?
-			Token token = Token.GetToken(player.getUniqueId(), connection);
-			if(token == null)
+			Start(as, player.getName());
+			if(!DoToken(as))
 			{
-				// Create or check the shortcode.
-				ShortcodeStatus check = DoShortcode(user);
-				
-				// Tell the user to enter a code into mixer.
-				if(check.status == Status.MIXER_CODE_204 || check.status == Status.MIXER_CODE_403 || check.status == Status.MIXER_CODE_404)
-				{
-					user.ChangeStatus(check.status, connection);
-					player.disallow(Result.KICK_OTHER, Messages.Shortcode(check.status, user, check.shortcode.code));
-					return check.status;
-				}
-
-				// Authorize and isnert the new token.
-				token = new Token(player.getUniqueId());
-				token = plugin.mixer.AuthorizeToken(token, check.shortcode.authCode);
-				token.InsertToken(connection);
-
-				// Remove the now un-used shortcode.
-				Shortcode.ClearShortcodesFor(player.getUniqueId(), connection);
-
-				user.InitClient(token, plugin.mixer);
-
-				// Get the user's mixer details.
-				plugin.mixer.SetUserDetails(user);
+				// The player has not sucessfully gotten a token from mixer.
+				as.success = false;
+				return as;
 			}
-			// The player already has a token, refresh it if needed.
+			CheckUserDetails(as);
+			CheckUser(as);
+			as.user.Update(connection);
+			return as;
+		}
+		catch( Exception e)
+		{
+			Logging.LogException(e);
+			as.success = false;
+			return as;
+		}
+	}
+	private void Start(AuthSession session, String minecraftUsername) throws Exception
+	{
+		session.user = User.GetUser(session.uuid, connection);
+		
+		// Add a new user if one does not exisit.
+		if(session.user == null)
+		{
+			Logging.LogUserState(minecraftUsername, "Adding new user to database.");
+			User.AddNewUser(minecraftUsername, session.uuid, connection);
+			session.user = User.GetUser(session.uuid, connection);
+		}
+	}
+	private boolean DoToken(AuthSession session) throws Exception
+	{
+		session.token = Token.GetToken(session.uuid, connection);
+
+		boolean freshToken = false;
+		
+		// The user does not have a token. Go through the shortcode process.
+		if(session.token == null)
+		{
+			Logging.LogUserState(session.user, "User has no OAuth token.");
+			if(DoShortcode(session))
+			{
+				// The user has finished with the shortcode. Let's Auorize the new token.
+				session.token = new Token(session.uuid);
+				session.token = plugin.mixer.AuthorizeToken(session.token, session.shortcode.authCode);
+				session.token.InsertToken(connection);
+				freshToken = true;
+			}
+			// The user has to complete the shortcode and come back.
 			else
 			{
-				//TODO: Remove this debug line.
-				plugin.getLogger().info(token.uuid.toString());
-
-				user.InitClient(token, plugin.mixer);
-				// If the token is out of-date, get a new one.
-				Calendar now = Calendar.getInstance();
-				if(token.expires.before(now.getTime()))
-				{
-					// Refresh the token and add it to the database.
-					token = plugin.mixer.RefreshToken(token);
-					token.UpdateToken(connection);
-				}
+				return false;
 			}
+		}
 
-			return Status.ERROR;
-		}
-		catch (Exception e) 
-		{
-			throw e;
-		}
+		session.client = new MixerAPI(plugin.mixer.clientId, session.token.accessToken);
+
+		// Only check the token it's not brand spanking new.
+
+		return true;
 	}
-	
-	private ShortcodeStatus DoShortcode(User user) throws Exception
+	private boolean DoShortcode(AuthSession session) throws Exception
 	{
-		ShortcodeStatus ss = new ShortcodeStatus();
-		ss.shortcode = Shortcode.GetCode(user.uuid, connection);
+		session.shortcode = Shortcode.GetCode(session.uuid, connection);
 
 		// Does the user have a shortcode assoicated with them?
-		if(ss.shortcode == null)
+		if(session.shortcode == null)
 		{
-			// Ask mixer for a shortcode.users
+			Logging.LogUserState(session.user, "Creating new shortcode for user.");
+			// Ask mixer for a new shortcode.
 			ShortcodeResponse shRsp = plugin.mixer.GetNewShortcode();
 
-			// Add the shortcode to the database.
-			ss.shortcode = Shortcode.InsertShortcode(user.uuid, shRsp, connection);
+			// Add the shortcode into the database.
+			session.shortcode = Shortcode.InsertShortcode(session.uuid, shRsp, connection);
+			// Kick the player so they can enter the new shortcode.
+			session.kickMessage = Messages.Start(session.shortcode, session.user);
 
-			ss.status = Status.MIXER_CODE_204;
-			// return we are wating for the user to enter the shortcode.
-			return ss;
+			Logging.LogUserState(session.user, "Shortcode for " + session.user.minecraftName + " is " + shRsp.code + " handle: " + shRsp.handle);
+			return false;
 		}
 
-		// What's the status of this shortcode?
-		ShortcodeCheck check = plugin.mixer.CheckShortcode(ss.shortcode.handle);
+		// What's the status of the user's shortcode?
+		ShortcodeCheck check = plugin.mixer.CheckShortcode(session.shortcode.handle);
 
+		// Looks like the user has pressed 'Allow' on the mixer.com/go page.
 		if(check.httpCode == 200)
 		{
-			ss.shortcode.authCode = check.code;
-			ss.status = Status.NOT_FOLLOWING;
-			return ss;
+			Logging.LogUserState(session.user, "Shortcode authorized by user.");
+			session.shortcode.authCode = check.code;
+			session.user.status = Status.NOT_FOLLOWING;
+			return true;
 		}
 
-		ss.status = Status.ERROR;
-
-		plugin.getLogger().info(ss.status.toString());
-
 		if(check.httpCode == 204)
-			ss.status = Status.MIXER_CODE_204;
-
-		if(check.httpCode == 403)
-			ss.status = Status.MIXER_CODE_403;
+		{
+			Logging.LogUserState(session.user, "Shortcode has not been used.");
+			session.user.status = Status.MIXER_CODE_204;
+			session.kickMessage = Messages.Unused(session.shortcode, session.user);
+		}
 
 		if(check.httpCode == 404)
-			ss.status = Status.MIXER_CODE_404;
-		return ss;
+		{
+			Logging.LogUserState(session.user, "Shortcode expired, creating a new one.");
+			session.user.status = Status.MIXER_CODE_404;
+
+			// Update the user's existing shortcode with this new one.
+			ShortcodeResponse shRsp = plugin.mixer.GetNewShortcode();
+			session.shortcode = new Shortcode(session.uuid, shRsp);
+			session.shortcode.Upddate(connection);
+
+			session.kickMessage = Messages.Expired(session.shortcode, session.user);
+		}
+
+		if(check.httpCode == 403)
+		{
+			Logging.LogUserState(session.user, "User has denied shortcode access.");
+			session.kickMessage = Messages.Forbidden(session.user);
+			session.user.status = Status.MIXER_CODE_403;
+
+			// Remove the user's shortcode so they can get a new one when the join.
+			Shortcode.ClearShortcodesFor(session.uuid, connection);
+			session.shortcode = null;
+		}
+		return false;
 	}
 
+	private void CheckUserDetails(AuthSession session) throws Exception
+	{
+		// If the user's mixer details are not set, get them from mixer and update the profile.
+		if(session.user.mixerID <= 0 || session.user.mixerName == null || session.user.mixerName.isEmpty())
+		{
+			Logging.LogUserState(session.user, "Getting user details.");
+			plugin.mixer.SetUserDetails(session);
+		}
+	}
+	private boolean CheckUser(AuthSession session)
+	{
+		Logging.LogUserState(session.user, "Checking if user is following mixer users.");
+		return true;
+	}
 	private class ShortcodeStatus
 	{
 		public Shortcode shortcode;

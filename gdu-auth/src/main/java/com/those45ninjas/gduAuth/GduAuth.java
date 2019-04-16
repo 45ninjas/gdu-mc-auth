@@ -22,6 +22,7 @@ public class GduAuth extends JavaPlugin
 		// Attempt to create a connection to the database.
 		try
 		{
+			new Logging(this);
 			auth = new Authorization(this);			
 			mixer = new MixerFunctions(this);
 			new Messages(this);

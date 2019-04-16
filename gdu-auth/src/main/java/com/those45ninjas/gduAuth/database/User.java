@@ -35,8 +35,6 @@ public class User {
     // The time this user was added to the database.
     public Timestamp created;
 
-    public MixerAPI client;
-
     // Create a new user with a username and UUID
     public User(String mcName, UUID uuid)
     {
@@ -50,13 +48,6 @@ public class User {
     {
         // status = Status.ERROR;
     }
-
-    public void InitClient(Token token, MixerFunctions mixer)
-    {
-        client = new MixerAPI(mixer.clientId, token.accessToken);
-        client.register(new UtilsMixerService(client));
-    }
-
     // Gets a user from the database, of none exist with the specified UUID, null is returned.
     public static User GetUser(UUID uuid, Connection connection) throws SQLException
     {

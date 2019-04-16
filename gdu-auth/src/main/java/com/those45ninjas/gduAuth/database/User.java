@@ -94,7 +94,7 @@ public class User {
         "SET minecraftName = ?, " +
         "status = ?, " +
         "mixerId = ?, " +
-        "mixerName = ?, " +
+        "mixerName = ? " +
         "WHERE UUID = UUID_TO_BIN(?)";
 
         PreparedStatement stm = connection.prepareStatement(sql);
@@ -102,7 +102,7 @@ public class User {
         stm.setInt(2, status.GetVal());
         stm.setLong(3, mixerID);
         stm.setString(4, mixerName);
-        stm.setString(6, uuid.toString());
+        stm.setString(5, uuid.toString());
 
         stm.executeUpdate();
     }

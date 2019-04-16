@@ -16,7 +16,8 @@ public class Messages
         
     }
 
-    private static String follows;
+    // TODO: Set this from the config file.
+    private static String follows = "[users to follow on mixer]";
     private static GduAuth plugin;
 
     public static String Start(Shortcode code, User user)
@@ -71,10 +72,7 @@ public class Messages
         String msg = plugin.getConfig().getString("messages.fault",
         "There was an error. Details: ::exception::");
 
-        if(e.getMessage() != null)
-            msg = msg.replaceAll("::exception::", Matcher.quoteReplacement(e.getMessage()));
-        else
-            msg = msg.replaceAll("::exception::", e.getClass().toString());
+        msg = msg.replaceAll("::exception::", e.getClass().toString());
 
         return msg;
     }

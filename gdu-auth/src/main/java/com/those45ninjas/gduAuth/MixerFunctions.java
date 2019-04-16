@@ -97,35 +97,49 @@ public class MixerFunctions {
         catch (InterruptedException | ExecutionException | TimeoutException e)
         {
             Logging.LogFutureFail(e, "The server was unable to get your user details from mixer.com");
+            throw e;
         }
     }
 
-    public ShortcodeResponse GetNewShortcode() throws Exception {
+    public ShortcodeResponse GetNewShortcode() throws Exception
+    {
         ListenableFuture<ShortcodeResponse> future = mixer.use(UtilsMixerService.class).shortcode(clientId,
                 clientSecret);
-        try {
+        try
+        {
             ShortcodeResponse resp = future.get(10, TimeUnit.SECONDS);
             return resp;
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            Logging.LogFutureFail(e, "The server was unable to get a six digit cdoe from mixer.com");
         }
-        return null;
+        catch (InterruptedException | ExecutionException | TimeoutException e) {
+            Logging.LogFutureFail(e, "The server was unable to get a six digit cdoe from mixer.com");
+            throw e;
+        }
     }
 
-    public ShortcodeCheck CheckShortcode(String handle) throws Exception {
+    public ShortcodeCheck CheckShortcode(String handle) throws Exception
+    {
         ListenableFuture<ShortcodeCheck> future = mixer.use(UtilsMixerService.class).checkShortcode(handle, clientId,
                 clientSecret);
 
         ShortcodeCheck check = new ShortcodeCheck();
-        try {
+        try
+        {
             check = future.get(10, TimeUnit.SECONDS);
             check.httpCode = 200;
             return check;
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+        }
+        catch (InterruptedException | ExecutionException | TimeoutException e)
+        {
             HttpBadResponseException badHttp = (HttpBadResponseException) e.getCause();
-            check.httpCode = badHttp.response.status();
-
-            Logging.LogFutureFail(e, "The server was unable to check your code with mixer.com");
+            if(badHttp != null)
+            {
+                check.httpCode = badHttp.response.status();
+            }
+            else
+            {
+                Logging.LogFutureFail(e, "The server was unable to check your code with mixer.com");
+                throw e;
+            }
         }
         return check;
     }
@@ -165,6 +179,7 @@ public class MixerFunctions {
         catch (InterruptedException | ExecutionException | TimeoutException e)
         {
             Logging.LogFutureFail(e, "The server was unable to authenticate with mixer.com");
+            throw e;
         }
 
         return token;

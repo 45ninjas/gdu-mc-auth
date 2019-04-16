@@ -112,6 +112,7 @@ public class Authorization
 		catch( Exception e)
 		{
 			Logging.LogException(e);
+			as.kickMessage = Messages.Fault(e);
 			as.success = false;
 			return as;
 		}

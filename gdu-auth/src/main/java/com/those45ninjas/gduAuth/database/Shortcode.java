@@ -99,9 +99,9 @@ public class Shortcode {
     public void Upddate(Connection connection) throws SQLException
     {
         String sql = "UPDATE shortcodes SET " +
-        "shortcode = ? " +
-        "handle = ? " +
-        "expires = ? " +
+        "shortcode = ?, " +
+        "handle = ?, " +
+        "expires = ?, " +
         "code = ? " +
         "WHERE UUID_TO_BIN(?)";
 

@@ -1,5 +1,6 @@
 package com.those45ninjas.gduAuth;
 
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
 
 import com.google.gson.JsonElement;
@@ -32,7 +33,9 @@ public class Logging {
         {
             HttpBadResponseException badResponse = (HttpBadResponseException)e.getCause();
             if(badResponse != null)
-                LogHttpError((HttpBadResponseException)e.getCause());
+            {
+                LogHttpError((HttpBadResponseException)e.getCause());                
+            }
         }
     }
 
@@ -44,7 +47,12 @@ public class Logging {
         if(json.isJsonObject())
         {
             JsonObject error = json.getAsJsonObject();
-            logger.info(badResponse.response.body());
+
+            int status = error.get("statusCode").getAsInt();
+            String errorTitle = error.get("error").getAsString();
+            String message = error.get("message").getAsString();
+
+            logger.severe(String.format("[%d] %s: %s",status, errorTitle, message));
         }
         else
         {
@@ -55,5 +63,6 @@ public class Logging {
     public static void LogException(Exception e)
     {
         logger.severe(e.toString());
+        e.printStackTrace();
 	}
 }

@@ -20,7 +20,7 @@ public class Oauth {
     }
 
     // Get a new shortcode.
-    public static ShortcodeResponse NewShortcode(Mixer mixer) throws IOException
+    public static ShortcodeResponse NewShortcode(Mixer mixer) throws IOException, BadHttpResponse
     {
         JsonObject data = new JsonObject();
 
@@ -29,6 +29,11 @@ public class Oauth {
         data.addProperty("scope", Mixer.scope);
 
         Response response = mixer.Post("shortcode", data);
+
+        if(response.code() != 200)
+        {
+            throw new BadHttpResponse(response);
+        }
 
         return Mixer.g.fromJson(response.body().charStream(), ShortcodeResponse.class);
     }

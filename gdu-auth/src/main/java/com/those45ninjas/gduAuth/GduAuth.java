@@ -1,13 +1,14 @@
 package com.those45ninjas.gduAuth;
 
 import com.those45ninjas.gduAuth.Authorization;
+import com.those45ninjas.gduAuth.mixer.Mixer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class GduAuth extends JavaPlugin
 {
-	public MixerFunctions mixer;
+	public Mixer mixer;
 	public Authorization auth;
 
 	@Override
@@ -24,7 +25,7 @@ public class GduAuth extends JavaPlugin
 		{
 			new Logging(this);
 			auth = new Authorization(this);			
-			mixer = new MixerFunctions(this);
+			mixer = new Mixer(this);
 			new Messages(this);
 		}
 		catch (Exception e)

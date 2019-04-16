@@ -60,10 +60,6 @@
       <id>bungeecord-repo</id>
       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
     </repository>
-    <repository>
-      <id>mixer-releases</id>
-      <url>https://maven.mixer.com/content/repositories/releases/</url>
-    </repository>
   </repositories>
   <dependencies>
     <dependency>
@@ -79,6 +75,10 @@
         <exclusion>
           <artifactId>json-simple</artifactId>
           <groupId>com.googlecode.json-simple</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>guava</artifactId>
+          <groupId>com.google.guava</groupId>
         </exclusion>
         <exclusion>
           <artifactId>bungeecord-chat</artifactId>

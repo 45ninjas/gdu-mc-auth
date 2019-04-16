@@ -5,9 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.UUID;
 
-import org.bukkit.Bukkit;
+import com.those45ninjas.gduAuth.mixer.responses.OAuthTokenResponse;
 
 public class Token {
 
@@ -96,4 +97,15 @@ public class Token {
 
         ps.execute();
     }
+
+    public void set(OAuthTokenResponse authToken)
+    {
+        this.accessToken = authToken.access_token;
+        Calendar now = Calendar.getInstance();
+        now.add(Calendar.SECOND, (int)authToken.expires_in);
+
+        this.expires = new Timestamp(now.getTime().getTime());
+        this.refreshToken = authToken.refresh_token;
+        this.type = authToken.token_type;
+	}
 }

@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.UUID;
 
-import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeResponse;
+import com.those45ninjas.gduAuth.mixer.responses.ShortcodeResponse;
 
 public class Shortcode {
 

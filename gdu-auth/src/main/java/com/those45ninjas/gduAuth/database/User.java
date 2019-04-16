@@ -7,11 +7,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.UUID;
 
-import com.mixer.api.MixerAPI;
-import com.mixer.api.http.MixerHttpClient;
-import com.those45ninjas.gduAuth.MixerFunctions;
 import com.those45ninjas.gduAuth.Authorization.Status;
-import com.those45ninjas.gduAuth.MixerAPIExtension.UtilsMixerService;
 
 public class User {
 

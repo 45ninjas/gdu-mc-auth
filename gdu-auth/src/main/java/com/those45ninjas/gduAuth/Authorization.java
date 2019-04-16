@@ -3,23 +3,19 @@ package com.those45ninjas.gduAuth;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
-import com.mixer.api.MixerAPI;
-import com.mixer.api.http.MixerHttpClient;
-import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeCheck;
-import com.those45ninjas.gduAuth.MixerAPIExtension.ShortcodeResponse;
 import com.those45ninjas.gduAuth.database.Shortcode;
 import com.those45ninjas.gduAuth.database.Token;
 import com.those45ninjas.gduAuth.database.User;
+import com.those45ninjas.gduAuth.mixer.Mixer;
+import com.those45ninjas.gduAuth.mixer.Oauth;
+import com.those45ninjas.gduAuth.mixer.responses.ShortcodeCheck;
+import com.those45ninjas.gduAuth.mixer.responses.ShortcodeResponse;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
-import org.bukkit.event.player.AsyncPlayerPreLoginEvent.Result;
 
 public class Authorization
 {
@@ -94,7 +90,7 @@ public class Authorization
 	{
 		AuthSession as = new AuthSession(player);
 		Logging.LogUserState(player.getName(), "Checking");
-		as.client = plugin.mixer.mixer;
+		as.mixer = new Mixer(plugin.mixer);
 		try
 		{
 			Start(as, player.getName());
@@ -143,7 +139,7 @@ public class Authorization
 			{
 				// The user has finished with the shortcode. Let's Auorize the new token.
 				session.token = new Token(session.uuid);
-				session.token = plugin.mixer.AuthorizeToken(session.token, session.shortcode.authCode);
+				session.token.set(Oauth.AuthToken(session.mixer, session.shortcode.authCode));
 				session.token.InsertToken(connection);
 				freshToken = true;
 			}
@@ -154,7 +150,7 @@ public class Authorization
 			}
 		}
 
-		session.client = new MixerAPI(plugin.mixer.clientId, session.token.accessToken);
+		session.mixer.SetToken(session.token.accessToken);
 
 		// Only check the token it's not brand spanking new.
 
@@ -169,7 +165,7 @@ public class Authorization
 		{
 			Logging.LogUserState(session.user, "Creating new shortcode for user.");
 			// Ask mixer for a new shortcode.
-			ShortcodeResponse shRsp = plugin.mixer.GetNewShortcode();
+			ShortcodeResponse shRsp = Oauth.NewShortcode(session.mixer);
 
 			// Add the shortcode into the database.
 			session.shortcode = Shortcode.InsertShortcode(session.uuid, shRsp, connection);
@@ -181,7 +177,7 @@ public class Authorization
 		}
 
 		// What's the status of the user's shortcode?
-		ShortcodeCheck check = plugin.mixer.CheckShortcode(session.shortcode.handle);
+		ShortcodeCheck check = Oauth.CheckShortcode(session.mixer, session.shortcode.handle);
 
 		// Looks like the user has pressed 'Allow' on the mixer.com/go page.
 		if(check.httpCode == 200)
@@ -205,7 +201,7 @@ public class Authorization
 			session.user.status = Status.MIXER_CODE_404;
 
 			// Update the user's existing shortcode with this new one.
-			ShortcodeResponse shRsp = plugin.mixer.GetNewShortcode();
+			ShortcodeResponse shRsp = Oauth.NewShortcode(session.mixer);
 			session.shortcode = new Shortcode(session.uuid, shRsp);
 			session.shortcode.Upddate(connection);
 
@@ -231,23 +227,12 @@ public class Authorization
 		if(session.user.mixerID <= 0 || session.user.mixerName == null || session.user.mixerName.isEmpty())
 		{
 			Logging.LogUserState(session.user, "Getting user details.");
-			plugin.mixer.SetUserDetails(session);
+			//plugin.mixer.SetUserDetails(session);
 		}
 	}
 	private boolean CheckUser(AuthSession session)
 	{
 		Logging.LogUserState(session.user, "Checking if user is following mixer users.");
 		return true;
-	}
-	private class ShortcodeStatus
-	{
-		public Shortcode shortcode;
-		public Status status;
-	}
-
-	private Shortcode MakeCode(UUID uuid) throws Exception
-	{
-		ShortcodeResponse response = plugin.mixer.GetNewShortcode();		
-		return Shortcode.InsertShortcode(uuid, response, connection);
 	}
 }

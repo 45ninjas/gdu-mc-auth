@@ -2,9 +2,6 @@ package com.those45ninjas.gduAuth;
 
 import java.util.regex.Matcher;
 
-import javax.management.InvalidAttributeValueException;
-
-import com.those45ninjas.gduAuth.Authorization.Status;
 import com.those45ninjas.gduAuth.database.Shortcode;
 import com.those45ninjas.gduAuth.database.User;
 

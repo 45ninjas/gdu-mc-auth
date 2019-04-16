@@ -1,4 +1,4 @@
-package com.those45ninjas.gduAuth.MixerAPIExtension;
+package com.those45ninjas.gduAuth.mixer.responses;
 import java.io.Serializable;
 
 public class OAuthClient implements Serializable

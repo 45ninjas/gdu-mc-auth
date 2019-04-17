@@ -14,6 +14,7 @@ import com.those45ninjas.gduAuth.mixer.Oauth;
 import com.those45ninjas.gduAuth.mixer.responses.ShortcodeCheck;
 import com.those45ninjas.gduAuth.mixer.responses.ShortcodeResponse;
 
+import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
@@ -101,15 +102,23 @@ public class Authorization
 				return as;
 			}
 			CheckUserDetails(as);
-			CheckUser(as);
+			if(CheckUser(as))
+			{
+				// Wooh the player is allowed in.
+
+				// TODO: Oi future Tom, set the last login to let the player in.
+
+				throw new NotImplementedException();
+			}
 			as.user.Update(connection);
 			return as;
 		}
 		catch( Exception e)
 		{
-			Logging.LogException(e);
+			Logging.LogException(e);			
 			as.kickMessage = Messages.Fault(e);
 			as.success = false;
+			
 			return as;
 		}
 	}
@@ -134,14 +143,19 @@ public class Authorization
 		// The user does not have a token. Go through the shortcode process.
 		if(session.token == null)
 		{
-			Logging.LogUserState(session.user, "User has no OAuth token.");
+			Logging.LogUserState(session.user, "Has no OAuth token.");
 			if(DoShortcode(session))
 			{
 				// The user has finished with the shortcode. Let's Auorize the new token.
 				session.token = new Token(session.uuid);
 				session.token.set(Oauth.AuthToken(session.mixer, session.shortcode.authCode));
+
+				// Insert the new token so we have it for later.
 				session.token.InsertToken(connection);
 				freshToken = true;
+
+				// Remove the now redundant shortcode.
+				Shortcode.ClearShortcodesFor(session.uuid, connection);
 			}
 			// The user has to complete the shortcode and come back.
 			else
@@ -150,9 +164,11 @@ public class Authorization
 			}
 		}
 
+		// Set the token for this user's session.
 		session.mixer.SetToken(session.token.accessToken);
 
 		// Only check the token it's not brand spanking new.
+		// TODO: Verify the token is still valid. Maybe this should be intergrated into the mixer http calls?
 
 		return true;
 	}
@@ -163,7 +179,7 @@ public class Authorization
 		// Does the user have a shortcode assoicated with them?
 		if(session.shortcode == null)
 		{
-			Logging.LogUserState(session.user, "Creating new shortcode for user.");
+			Logging.LogUserState(session.user, "Creating new shortcode.");
 			// Ask mixer for a new shortcode.
 			ShortcodeResponse shRsp = Oauth.NewShortcode(session.mixer);
 
@@ -177,12 +193,13 @@ public class Authorization
 		}
 
 		// What's the status of the user's shortcode?
+		Logging.LogUserState(session.user, "Checking shortcode.");
 		ShortcodeCheck check = Oauth.CheckShortcode(session.mixer, session.shortcode.handle);
 
 		// Looks like the user has pressed 'Allow' on the mixer.com/go page.
 		if(check.httpCode == 200)
 		{
-			Logging.LogUserState(session.user, "Shortcode authorized by user.");
+			Logging.LogUserState(session.user, "Shortcode authorized.");
 			session.shortcode.authCode = check.code;
 			session.user.status = Status.NOT_FOLLOWING;
 			return true;
@@ -232,7 +249,7 @@ public class Authorization
 	}
 	private boolean CheckUser(AuthSession session)
 	{
-		Logging.LogUserState(session.user, "Checking if user is following mixer users.");
+		Logging.LogUserState(session.user, "Checking if is following mixer users.");
 		return true;
 	}
 }

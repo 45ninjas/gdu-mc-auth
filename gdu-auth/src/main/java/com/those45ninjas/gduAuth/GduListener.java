@@ -36,6 +36,11 @@ public class GduListener implements Listener
 		// Check the in-coming player.
 		AuthSession auth = plugin.auth.Check(player);
 
+		// If the kick message is empty, set it to something.
+		// TODO: Put this message in the config file.
+		if(auth.kickMessage == null || auth.kickMessage.isEmpty())
+			auth.kickMessage = "GDU-AUTH ERROR: Something went so wrong that we don't know what happened.";
+
 		// Are they allowed?
 		if(auth.success)
 			player.allow();

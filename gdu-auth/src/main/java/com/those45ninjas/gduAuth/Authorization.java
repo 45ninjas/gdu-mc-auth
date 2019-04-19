@@ -11,6 +11,7 @@ import com.those45ninjas.gduAuth.database.Token;
 import com.those45ninjas.gduAuth.database.User;
 import com.those45ninjas.gduAuth.mixer.Mixer;
 import com.those45ninjas.gduAuth.mixer.Oauth;
+import com.those45ninjas.gduAuth.mixer.responses.MixerUser;
 import com.those45ninjas.gduAuth.mixer.responses.ShortcodeCheck;
 import com.those45ninjas.gduAuth.mixer.responses.ShortcodeResponse;
 
@@ -20,45 +21,6 @@ import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
 public class Authorization
 {
-	
-	public enum Status
-	{		
-		// Error state.*it all will work when
-		ERROR(0),
-		// The player is allowed to join.
-		ALLOWED(1),
-		// The player is not following any or all of the channels.
-		NOT_FOLLOWING(2),
-		// Code is valid, the user has not granted it.
-		MIXER_CODE_204(4),
-		// User denied access to account. They can't join, have a new code just in-case.
-		MIXER_CODE_403(8),
-		// Auth code has expired, They need a new code.
-		MIXER_CODE_404(16);
-
-		private int id;
-		private static Map map = new HashMap<>();
-
-		Status(int val) {
-			id = val;
-		}
-
-		static {
-			for (Status status : Status.values()) {
-				map.put(status.id, status);
-			}
-		}
-
-		public int GetVal()
-		{
-			return id;
-		}
-		public static Status SetVal(int val)
-		{
-			return (Status) map.get(val);
-		}
-	}
-	
 	public Connection connection;
 	private GduAuth plugin;
 
@@ -90,7 +52,6 @@ public class Authorization
 	public AuthSession Check(AsyncPlayerPreLoginEvent player) throws Exception
 	{
 		AuthSession as = new AuthSession(player);
-		Logging.LogUserState(player.getName(), "Checking");
 		as.mixer = new Mixer(plugin.mixer);
 		try
 		{
@@ -101,51 +62,12 @@ public class Authorization
 				as.success = false;
 				return as;
 			}
-			CheckUserDetails(as);
+			UpdateMixerDetails(as);
 			if(CheckUser(as))
 			{
-				// Wooh the player is allowed in.
-
-				// After many databases and mixer api calls Player has finished her journey. With triumph
-				// behind and excitement ahead She was ready for whatever was behind the last check. She
-				// walked around the corner and gasped. It was the last one she yelled with excitement.
-				
-				// As she wen't through the opening of the corridor she found herself in a massive open
-				// cavern. A little stone bridge was between her and the final step. Looking down over the
-				// bridge, a great distance separated her and the [dark place in my head]. Seeing that
-				// putrid place reminded her of the pain and suffering, the reason why She started that
-				// journey.
-				
-				// Little did Player know, Tom the overlord developer left her with the worst of them all.
-
-				//		One last toil. You must write the time and pass the NotImplementedException()
-
-				// Player's heart sank as She immediately knew that Tom is a lazy bugger and threw a
-				// NotImplmentedException instead of writing the single line of SQL required to complete
-				// the final step.
-				
-				// Player took one step back and with a sigh braced herself for that all so familiar
-				// feeling. There it was, that cold, dark and all-powerful force. That strange force was
-				// pushing player towards the edge of the bridge. That [dark place in my head] As Player
-				// resisted her inevitable fall towards pain and suffering in the [dark place in my head]
-				// She noticed a message, todo.
-				
-				// TODO: Oi future Tom, set the last login to let the player in.
-				
-				// Full of un-anguishable anger she was silent for a moment. Suddenly she cried out
-				// "How could he be so lazy? All he had type was
-				// UPDATE users SET last_login = NOW() WHERE UUID=UUID_TO_BIN(?)" in disgust.
-				
-				// However shear fear triumphed all emotions as She lost her balance. The force had
-				// pushed her off the bridge towards the [dark place in my head]. Player let out a loud
-				// cry as She fell off the stack_trace towards [dark place in my head].
-				
-				// Player's cry suddenly stopped with a harsh and sudden *THUD*.
-				
-				// Moments later in the silence the harsh reality hit me. What was done could not be
-				// undone. It was my fault, I ... I ki ... I killed the only one I love.
-
-				throw new NotImplementedException();
+				// Update the last login and let them in.
+				as.user.UpdateLastLogin(connection);
+				as.success = true;
 			}
 			as.user.Update(connection);
 			return as;
@@ -238,21 +160,18 @@ public class Authorization
 		{
 			Logging.LogUserState(session.user, "Shortcode authorized.");
 			session.shortcode.authCode = check.code;
-			session.user.status = Status.NOT_FOLLOWING;
 			return true;
 		}
 
 		if(check.httpCode == 204)
 		{
 			Logging.LogUserState(session.user, "Shortcode has not been used.");
-			session.user.status = Status.MIXER_CODE_204;
 			session.kickMessage = Messages.Unused(session.shortcode, session.user);
 		}
 
 		if(check.httpCode == 404)
 		{
 			Logging.LogUserState(session.user, "Shortcode expired, creating a new one.");
-			session.user.status = Status.MIXER_CODE_404;
 
 			// Update the user's existing shortcode with this new one.
 			ShortcodeResponse shRsp = Oauth.NewShortcode(session.mixer);
@@ -266,8 +185,7 @@ public class Authorization
 		{
 			Logging.LogUserState(session.user, "User has denied shortcode access.");
 			session.kickMessage = Messages.Forbidden(session.user);
-			session.user.status = Status.MIXER_CODE_403;
-
+			
 			// Remove the user's shortcode so they can get a new one when the join.
 			Shortcode.ClearShortcodesFor(session.uuid, connection);
 			session.shortcode = null;
@@ -275,18 +193,22 @@ public class Authorization
 		return false;
 	}
 
-	private void CheckUserDetails(AuthSession session) throws Exception
+	private void UpdateMixerDetails(AuthSession session) throws Exception
 	{
 		// If the user's mixer details are not set, get them from mixer and update the profile.
 		if(session.user.mixerID <= 0 || session.user.mixerName == null || session.user.mixerName.isEmpty())
 		{
 			Logging.LogUserState(session.user, "Getting user details.");
 			//plugin.mixer.SetUserDetails(session);
+			MixerUser.GetCurrentUser(session);
+
+			// TODO: Move this thuther down the chan?
+			session.user.Update(connection);
 		}
 	}
 	private boolean CheckUser(AuthSession session)
 	{
-		Logging.LogUserState(session.user, "Checking if is following mixer users.");
+		Logging.LogUserState(session.user, "Checking if " + session.user.mixerName + " is following mixer users.");
 		return true;
 	}
 }

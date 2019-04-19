@@ -32,16 +32,4 @@ public class MixerUser implements Serializable {
         public String discord;
         public String[] verified;
     }
-
-    public static void GetCurrentUser(AuthSession session) throws IOException, BadHttpResponse
-    {
-        Response rsp = session.mixer.Get("users/current");
-        
-        MixerUser mixUser = session.mixer.g.fromJson(rsp.body().charStream(), MixerUser.class);
-
-        Logging.logger.info(mixUser.username);
-
-        session.user.mixerName = mixUser.username;
-        session.user.mixerID = mixUser.id;
-	}
 }

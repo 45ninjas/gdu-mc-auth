@@ -3,19 +3,16 @@ package com.those45ninjas.gduAuth;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.those45ninjas.gduAuth.database.Shortcode;
 import com.those45ninjas.gduAuth.database.Token;
 import com.those45ninjas.gduAuth.database.User;
 import com.those45ninjas.gduAuth.mixer.Mixer;
 import com.those45ninjas.gduAuth.mixer.Oauth;
-import com.those45ninjas.gduAuth.mixer.responses.MixerUser;
+import com.those45ninjas.gduAuth.mixer.Users;
 import com.those45ninjas.gduAuth.mixer.responses.ShortcodeCheck;
 import com.those45ninjas.gduAuth.mixer.responses.ShortcodeResponse;
 
-import org.apache.commons.lang.NotImplementedException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 
@@ -185,7 +182,7 @@ public class Authorization
 		{
 			Logging.LogUserState(session.user, "User has denied shortcode access.");
 			session.kickMessage = Messages.Forbidden(session.user);
-			
+
 			// Remove the user's shortcode so they can get a new one when the join.
 			Shortcode.ClearShortcodesFor(session.uuid, connection);
 			session.shortcode = null;
@@ -200,7 +197,7 @@ public class Authorization
 		{
 			Logging.LogUserState(session.user, "Getting user details.");
 			//plugin.mixer.SetUserDetails(session);
-			MixerUser.GetCurrentUser(session);
+			Users.SetMixerDetails(session);
 
 			// TODO: Move this thuther down the chan?
 			session.user.Update(connection);

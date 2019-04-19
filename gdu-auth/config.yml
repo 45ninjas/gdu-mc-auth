@@ -6,9 +6,9 @@ mixer:
 
 # Players must be following one of the below mixer streamers to be able to join the server.
 follow-users:
-  - PhazorGDU
-  - ItzJumble
-  - Those45Ninjas
+  - 45977218 # PhazorGDU
+  - 65863356 # ItzJumble
+  - 68103774 # 45Ninjas
 
 # Kick the user if they un-follow and would not be allowed back in later.
 # WARNING: This feature is experimental.

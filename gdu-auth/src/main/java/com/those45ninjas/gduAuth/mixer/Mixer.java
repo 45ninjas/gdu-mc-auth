@@ -9,12 +9,14 @@ import com.google.gson.JsonSyntaxException;
 import com.those45ninjas.gduAuth.GduAuth;
 import com.those45ninjas.gduAuth.Logging;
 import com.those45ninjas.gduAuth.mixer.http.MixerCookieJar;
+import com.those45ninjas.gduAuth.mixer.responses.MixerFollows;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
 
 public class Mixer {
     public static String id;
@@ -155,5 +157,14 @@ public class Mixer {
             builder.addHeader("Authorization", "Bearer " + oAuthString);
 
         return builder;
+    }
+
+    public static <T> T ToObject(Class<T> type, ResponseBody body)
+    {
+        T obj = g.fromJson(body.charStream(), type);
+
+        body.close();
+
+        return obj;
     }
 }

@@ -24,7 +24,7 @@ public class Logging
     {
         logger.info(name + " STATE: " + state);
     }
-    public static void LogException(Exception e) throws IOException
+    public static void LogException(Exception e)
     {
         if(e instanceof BadHttpResponse)
         {

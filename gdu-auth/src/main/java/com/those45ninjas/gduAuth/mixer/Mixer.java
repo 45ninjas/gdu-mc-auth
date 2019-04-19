@@ -148,6 +148,8 @@ public class Mixer {
     {
         Request.Builder builder = new Request.Builder().url(mixerApi + resource);
 
+        builder.addHeader("Client-ID", Mixer.id);
+
         // Add the CSRF token to the header if we have one.
         if(csrfToken != null)
             builder.addHeader(CSRF_TOKEN_HEADER, csrfToken);

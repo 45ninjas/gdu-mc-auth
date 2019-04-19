@@ -14,6 +14,7 @@ public class GduAuth extends JavaPlugin
 {
 	public Mixer mixer;
 	public Authorization auth;
+	public MixerFollows[] streamers;
 
 	@Override
 	public void onEnable() {
@@ -29,34 +30,39 @@ public class GduAuth extends JavaPlugin
 	
 		try
 		{
-			// Create the default mixer.
+			// Create the default mixer, init auth and messages.
 			mixer = new Mixer(this);
-
-			// Init the auth class.
-			auth = new Authorization(this);			
-
-			// Init the messages.
+			auth = new Authorization(this);
 			new Messages(this);
 
-			// Verify the plugin's id.
+			// Get the client from mixer.
 			OAuthClient client = Oauth.Self(mixer);
 
+			// Was the clientID from mixer.com the same as the one provided in the config file?
 			if(client.clientId.equals(Mixer.id))
 			{
-				// Looks like we have the same client ID.
-				getLogger().info("Mixer: Client id check success.");
-				getLogger().info("Mixer: " + client.name);
+				// Output the client name from mixer.com to the console.
+				getLogger().info("Mixer Startup: Client id check success.");
+				getLogger().info("Mixer Startup: " + client.name);
 			}
 			else
 			{
 				// Have a cry that the client id is not correct.
 				throw new Exception("Client ID is not valid. Get one from https://mixer.com/lab/oauth");
 			}
+
+			// Convert the list of mixer user id's into something more useable.
+			streamers = Users.GetStreamers(mixer, getConfig().getLongList("follow-users"));
 		}
 		catch (Exception e)
 		{
+			// Windge about what happened.
 			Logging.LogException(e);
+
+			// Disable the plugin.
 			Bukkit.getPluginManager().disablePlugin(this);
+
+			// TODO: Add an option to the config file to make a failure not let anyone in at all. (prison vip lockdown)
 		}
 	}
 	@Override

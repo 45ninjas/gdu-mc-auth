@@ -3,6 +3,8 @@ package com.those45ninjas.gduAuth;
 import com.those45ninjas.gduAuth.Authorization;
 import com.those45ninjas.gduAuth.mixer.Mixer;
 import com.those45ninjas.gduAuth.mixer.Oauth;
+import com.those45ninjas.gduAuth.mixer.Users;
+import com.those45ninjas.gduAuth.mixer.responses.MixerFollows;
 import com.those45ninjas.gduAuth.mixer.responses.OAuthClient;
 
 import org.bukkit.Bukkit;
@@ -22,18 +24,23 @@ public class GduAuth extends JavaPlugin
 		// Register the Gdu Listener (it listens for players trying to join)
 		getServer().getPluginManager().registerEvents(new GduListener(this), this);
 
+		// Init. the logging logger.
 		new Logging(this);
-		
-		// Attempt to create a connection to the database.
+	
 		try
 		{
-			auth = new Authorization(this);			
+			// Create the default mixer.
 			mixer = new Mixer(this);
+
+			// Init the auth class.
+			auth = new Authorization(this);			
+
+			// Init the messages.
 			new Messages(this);
 
 			// Verify the plugin's id.
 			OAuthClient client = Oauth.Self(mixer);
-			
+
 			if(client.clientId.equals(Mixer.id))
 			{
 				// Looks like we have the same client ID.
@@ -42,6 +49,7 @@ public class GduAuth extends JavaPlugin
 			}
 			else
 			{
+				// Have a cry that the client id is not correct.
 				throw new Exception("Client ID is not valid. Get one from https://mixer.com/lab/oauth");
 			}
 		}

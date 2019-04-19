@@ -1,10 +1,15 @@
 package com.those45ninjas.gduAuth.mixer;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.those45ninjas.gduAuth.AuthSession;
 import com.those45ninjas.gduAuth.mixer.responses.MixerFollows;
 import com.those45ninjas.gduAuth.mixer.responses.MixerUser;
+
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 
 import okhttp3.Response;
 
@@ -23,17 +28,12 @@ public class Users
         // TODO: Get email and discord (if any).
     }
 
-    public static MixerFollows[] GetFollows(AuthSession session, String[] toFollow) throws IOException, BadHttpResponse
+    public static MixerFollows[] GetFollows(AuthSession session, long[] toFollow) throws IOException, BadHttpResponse
     {
-        String usersString = String.join(";", toFollow);
-        Response rsp = session.mixer.Get("/users/" + session.user.mixerID + "/follows?fields=userId,token&where=token:in" + usersString);
+        // Convert the array of mixerId's into a string of arrays seperated by ;'s
+        String usersString = StringUtils.join(ArrayUtils.toObject(toFollow), ";");
 
-        return Mixer.ToObject(MixerFollows[].class, rsp.body());
-    }
-    public static MixerFollows[] GetStreamers(Mixer mixer, String[] streamers) throws IOException, BadHttpResponse
-    {
-        String usersString = String.join(";", streamers);
-        Response rsp = mixer.Get("/users/search?fields=userId,token&where=token:in" + usersString);
+        Response rsp = session.mixer.Get("/users/" + session.user.mixerID + "/follows?fields=userId,token&where=token:in" + usersString);
 
         return Mixer.ToObject(MixerFollows[].class, rsp.body());
     }

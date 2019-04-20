@@ -34,7 +34,7 @@ public class Users
         // Convert the array of mixerId's into a string of arrays seperated by ;'s
         String usersString = StringUtils.join(ArrayUtils.toObject(toFollow), ";");
 
-        Response rsp = session.mixer.Get("users/" + session.user.mixerID + "/follows?fields=userId,token&where=token:in" + usersString);
+        Response rsp = session.mixer.Get("users/" + session.user.mixerID + "/follows?fields=userId,token&where=userId:in:" + usersString);
 
         return Mixer.ToObject(MixerFollows[].class, rsp.body());
     }

@@ -8,7 +8,7 @@ mixer:
 follow-users:
   - 45977218 # PhazorGDU
   - 65863356 # ItzJumble
-  - 68103774 # 45Ninjas
+  # - 68103774 # 45Ninjas
 
 # Kick the user if they un-follow and would not be allowed back in later.
 # WARNING: This feature is experimental.
@@ -22,69 +22,67 @@ database:
 
 # Customize these messages to fit your server/community. Details on variables at end of file.
 messages:
-  join-message: "::user:: (mixer ::mixer-user::) Joined the server. They are following ::follows::"
+  join-message: "§e::user:: (mixer ::mixer-user::) Joined the server.§r They are following ::follows::."
   # This message replaces the standard 'Those45Ninjas joined the game' message.
   # Varibles: ::user::, ::mixer-user::, and ::follows::
 
   start: |-
     Welcome ::user::. To join this server you must be following ::follows:: on mixer.com
-    Please enter your six digit code at https://mixer.com/go to join.
+    §ePlease enter your six digit code at §nhttps://mixer.com/go§r to join.§r
 
-    ::code::
+    §l§n::code::§r
 
     Re-join once you have finished.
 
-    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+    Having issues? Let us know on discord. §nhttps://discord.gg/MeGm6ZS§r
   # The message shown to the user when they are kicked for the first tme.
   # Or when the don't accept the permisions they are granting the OAuth.
   # Variables: ::code::, ::user::, ::expires:: and ::follows::
   
   code-un-used: |-
-    Please enter your six digit code at https://mixer.com/go to join.
+    §ePlease enter your six digit code at §nhttps://mixer.com/go§r to join.§r
 
-    ::code::
+    §l§n::code::§r
 
-    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+    Having issues? Let us know on discord. §nhttps://discord.gg/MeGm6ZS§r
   # The message shown when the user has not entered the six digit code.
   # Variables: ::code::, ::user::, ::expires:: and ::follows::
 
   code-expired: |-
-    Sorry your prevoius 6 digit code has expired.
-    Please enter your NEW six digit code at https://mixer.com/go to join.   
+    §eSorry your prevoius 6 digit code has expired.§r
+    Please enter your §nNEW§r six digit code at §nhttps://mixer.com/go to join.
 
-    ::code::
+    §l§n::code::§r
 
-    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+    Having issues? Let us know on discord. §nhttps://discord.gg/MeGm6ZS§r
   # The message shown when the user's six digit code has expired.
   # Variables: ::code::, ::user::, ::expires:: and ::follows::
 
   code-forbidden: |-
-    You have denied our server access to see who you are folloing on mixer.
+    §eYou have §c§ndenied§r our server access to see who you are folloing on mixer.§r
     
-    Re-join to try again.
+    §nRe-join to try again.§r
 
-    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+    Having issues? Let us know on discord. §nhttps://discord.gg/MeGm6ZS§r
   # The message shown when the user's six digit code has expired.
   # Variables: ::code::, ::user::, ::expires:: and ::follows::
   
   not-following: |-
-    You must be following ::follows:: on mixer to join.
+    §eYou must be following ::follows:: on mixer to join.§r
 
-    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+    Having issues? Let us know on discord. §nhttps://discord.gg/MeGm6ZS§r
   # The messge shown when the user is not following one of the streamers in the follow-users list.
   # Variables: ::user::, ::mixer-user:: and ::follows::
   
   fault: |-
-    Unfortuantley there was an error while authorizing your account.
+    §eThere was an error while authorizing your account.§r
 
-    Error Details
-    ::exception::
+    §nError Details§r
+    §c::exception::§r
 
-    Having issues? Let us know on discord. https://discord.gg/MeGm6ZS
+    Having issues? Let us know on discord. §nhttps://discord.gg/MeGm6ZS§r
   # The message shown to the user when there was an error.
   # Variables avaliale: ::exception::
-
-
 
 # Message variables are patterns that are replaced with data. For example all
 # bits of text that match ::user:: is replaced with the username of the minecraft

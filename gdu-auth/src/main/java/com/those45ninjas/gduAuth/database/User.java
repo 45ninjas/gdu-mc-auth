@@ -68,7 +68,7 @@ public class User {
         String sql = "INSERT INTO users " +
         "(UUID, minecraftName) " +
         "VALUES " +
-        "(UUID_TO_BIN(?),?,?)";
+        "(UUID_TO_BIN(?),?)";
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.setString(1, uniqueID.toString());
         statement.setString(2, username);

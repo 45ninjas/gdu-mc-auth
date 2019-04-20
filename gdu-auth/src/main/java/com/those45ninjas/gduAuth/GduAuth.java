@@ -30,10 +30,8 @@ public class GduAuth extends JavaPlugin
 	
 		try
 		{
-			// Create the default mixer, init auth and messages.
+			// Create the default mixer so we can do some startup checks.
 			mixer = new Mixer(this);
-			auth = new Authorization(this);
-			new Messages(this);
 
 			// Get the client from mixer.
 			OAuthClient client = Oauth.Self(mixer);
@@ -53,6 +51,10 @@ public class GduAuth extends JavaPlugin
 
 			// Convert the list of mixer user id's into something more useable.
 			streamers = Users.GetStreamers(mixer, getConfig().getLongList("follow-users"));
+
+			// Startup the messages and auth classes.
+			new Messages(this, streamers);
+			auth = new Authorization(this);
 		}
 		catch (Exception e)
 		{

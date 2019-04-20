@@ -4,16 +4,16 @@ import java.util.regex.Matcher;
 
 import com.those45ninjas.gduAuth.database.Shortcode;
 import com.those45ninjas.gduAuth.database.User;
+import com.those45ninjas.gduAuth.mixer.responses.MixerFollows;
 
 public class Messages
 {
-    public Messages(GduAuth plugin)
+    public Messages(GduAuth plugin, MixerFollows[] usersToFollow)
     {
         Messages.plugin = plugin;
-        
+        Messages.follows = Matcher.quoteReplacement(MixerFollows.GetNamesList(usersToFollow, "or"));
     }
 
-    // TODO: Set this from the config file.
     private static String follows = "[users to follow on mixer]";
     private static GduAuth plugin;
 
@@ -60,6 +60,7 @@ public class Messages
 
         msg = msg.replaceAll("::user::", Matcher.quoteReplacement(user.minecraftName));
         msg = msg.replaceAll("::follows::", follows);
+        msg = msg.replaceAll("::mixer-user::", Matcher.quoteReplacement(user.minecraftName));
         
         return msg;
     }
@@ -82,7 +83,18 @@ public class Messages
         msg = msg.replaceAll("::follows::", follows);
         
         return msg;
-	}
+    }
+    public static String Join(User user, MixerFollows[] follows)
+    {
+        String msg = plugin.getConfig().getString("messages.join-message",
+        "::user:: (mixer ::mixer-user::) Joined the server. They are following ::follows::");
+
+        msg = msg.replaceAll("::user::", Matcher.quoteReplacement(user.minecraftName));
+        msg = msg.replaceAll("::mixer-user::", Matcher.quoteReplacement(user.mixerName));
+        msg = msg.replaceAll("::follows::",  Matcher.quoteReplacement(MixerFollows.GetNamesList(follows, "and")));
+
+        return msg;
+    }
 
     private static String ReplaceCode(String msg, Shortcode code)
     {
